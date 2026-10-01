@@ -7,3 +7,6 @@ import NRS3DefectCurvature
 #print axioms DefectCurvature.cycle_iff_far
 #print axioms DefectCurvature.link_inside_cone
 #print axioms DefectCurvature.quantum_by_dimension
+#print axioms DefectEntropy.entropy_counts_defect
+#print axioms DefectEntropy.horizon_hides_entropy
+#print axioms DefectEntropy.bekenstein_hawking_fixes_area

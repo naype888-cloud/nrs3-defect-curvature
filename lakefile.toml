@@ -4,7 +4,7 @@ defaultTargets = ["NRS3DefectCurvature"]
 [[require]]
 name = "NavaRobertsonIndependent"
 git = "https://github.com/naype888-cloud/nava-robertson-schrodinger.git"
-rev = "6e70ff7608e913fe4bb237a83240a36c32ed1de4"
+rev = "ca1fd39e6e71257a7df592e6953d562bc98a613d"
 
 [[lean_lib]]
 name = "NRS3DefectCurvature"

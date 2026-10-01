@@ -40,11 +40,13 @@
   .stat .k { font-size: .78rem; color: var(--muted); } .stat .v { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
   .note { color: var(--ink2); font-size: .9rem; margin-top: 14px; max-width: 860px; }
   code { font-size: .88em; } a { color: var(--blue); }
+  .tabs { display: flex; gap: 6px; margin: 0 0 10px; font-size: .85rem; } .tabs a { padding: 3px 12px; border-radius: 999px; border: 1px solid var(--grid); color: var(--ink2); text-decoration: none; } .tabs a[aria-current] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 </style>
 </head>
 <body>
 <main>
   <button class="theme" id="theme" type="button" aria-label="Toggle dark mode">Theme</button>
+  <nav class="tabs" aria-label="Pages"><a href="./" aria-current="page">Defect and curvature</a><a href="rovelli.html">Rovelli, chapter by chapter</a></nav>
   <h1>The defect of transport fixes the curvature</h1>
   <p class="lead">Transport moves on the path, a tree. A link between two sites closes a cycle exactly
     when the sites are not neighbours, and every cycle carries one quantum <code>δ∞ = C∞ − 1</code>.

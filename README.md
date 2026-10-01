@@ -6,7 +6,8 @@ quantum `δ∞ = C∞ − 1`; `2g` links carry the defect `2g·δ∞` of a close
 and under Gauss–Bonnet that defect fixes its total curvature. The change travels inside the light
 cone, one site per step. In Lean 4.
 
-**[▶ Try it: add handles and watch the cone](https://naype888-cloud.github.io/nrs3-defect-curvature/)**
+**[▶ Try it: add handles and watch the cone](https://naype888-cloud.github.io/nrs3-defect-curvature/)** ·
+**[Rovelli's *Reality Is Not What It Seems*, chapter by chapter](https://naype888-cloud.github.io/nrs3-defect-curvature/rovelli.html)**
 
 ![NRS³ · Defect and curvature](docs/figures/defect_curvature.png)
 

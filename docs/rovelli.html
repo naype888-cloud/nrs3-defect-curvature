@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rovelli and NRS³</title>
+<meta name="description" content="Carlo Rovelli's Reality Is Not What It Seems, chapter by chapter, against the Lean modules of NRS and NRS³: where they coincide, where they are analogous, where they depart.">
+<style>
+  :root { --bg: #fcfcfb; --panel: #fff; --ink: #0b0b0b; --ink2: #52514e; --muted: #8a8985;
+    --grid: #e4e3df; --blue: #2a78d6; --orange: #eb6834; --green: #2f8f5b; --violet: #7a5bd6; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #111110; --panel: #191918; --ink: #f2f1ee; --ink2: #c4c3bf; --grid: #2c2b29;
+    --blue: #5b9be6; --orange: #f08a5d; --green: #4fb37d; --violet: #9d85e8; } }
+  :root[data-theme="dark"] { --bg: #111110; --panel: #191918; --ink: #f2f1ee; --ink2: #c4c3bf;
+    --grid: #2c2b29; --blue: #5b9be6; --orange: #f08a5d; --green: #4fb37d; --violet: #9d85e8; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 1.45rem; margin: 0 0 4px; font-weight: 650; }
+  .lead { color: var(--ink2); margin: 0 0 14px; max-width: 820px; }
+  .theme { float: right; font: inherit; font-size: .8rem; padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--grid); background: var(--panel); color: var(--ink); cursor: pointer; }
+  .tabs { display: flex; gap: 6px; margin: 0 0 10px; font-size: .85rem; }
+  .tabs a { padding: 3px 12px; border-radius: 999px; border: 1px solid var(--grid); color: var(--ink2); text-decoration: none; }
+  .tabs a[aria-current] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+  .filters button { font: inherit; font-size: .82rem; padding: 4px 11px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--grid); background: var(--panel); color: var(--ink2); }
+  .filters button[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); font-weight: 600; }
+  button:focus-visible, a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .head, .row { display: grid; grid-template-columns: 2.6em 1.15fr 1.6fr 1.6fr 8.5em; gap: 12px; padding: 10px 12px; }
+  .head { font-size: .78rem; color: var(--muted); border-bottom: 1px solid var(--grid); }
+  .row { background: var(--panel); border: 1px solid var(--grid); border-radius: 10px; margin-top: 8px; font-size: .9rem; }
+  .row .n { font-weight: 650; color: var(--muted); }
+  .row .t { font-weight: 600; }
+  .row .t small { display: block; font-weight: 400; color: var(--muted); }
+  .row p { margin: 0; color: var(--ink2); }
+  .badge { display: inline-block; font-size: .78rem; padding: 2px 9px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+  .coincides { color: var(--green); } .analogous { color: var(--blue); } .departs { color: var(--orange); }
+  .none { color: var(--muted); } .declared { color: var(--violet); }
+  .lbl { display: none; font-size: .74rem; color: var(--muted); margin-bottom: 2px; }
+  @media (max-width: 760px) {
+    .head { display: none; }
+    .row { grid-template-columns: 1fr; gap: 8px; }
+    .row .n { display: inline; } .lbl { display: block; }
+  }
+  .note { color: var(--ink2); font-size: .9rem; margin-top: 16px; max-width: 860px; }
+  code { font-size: .86em; } a { color: var(--blue); }
+</style>
+</head>
+<body>
+<main>
+  <button class="theme" id="theme" type="button" aria-label="Toggle dark mode">Theme</button>
+  <nav class="tabs" aria-label="Pages"><a href="./">Defect and curvature</a><a href="rovelli.html" aria-current="page">Rovelli, chapter by chapter</a></nav>
+  <h1>Rovelli and NRS³, chapter by chapter</h1>
+  <p class="lead">Carlo Rovelli's <i>Reality Is Not What It Seems</i> (Spanish edition: <i>La realidad
+    no es lo que parece</i>, Tusquets, ISBN 978-84-9066-194-9) describes loop quantum gravity. Each
+    chapter is set against the Lean modules of
+    <a href="https://github.com/naype888-cloud/nava-robertson-schrodinger">nava-robertson-schrodinger</a>
+    and the mosaic repositories. The summaries of the book are paraphrases; every module named is
+    compiled Lean, and what is only declared is marked as such.</p>
+
+  <div class="filters" role="group" aria-label="Filter by relation">
+    <button type="button" data-f="all" aria-pressed="true">All</button>
+    <button type="button" data-f="coincides" aria-pressed="false">Coincides</button>
+    <button type="button" data-f="analogous" aria-pressed="false">Analogous</button>
+    <button type="button" data-f="departs" aria-pressed="false">Departs</button>
+    <button type="button" data-f="declared" aria-pressed="false">Declared bridge</button>
+    <button type="button" data-f="none" aria-pressed="false">No counterpart</button>
+  </div>
+
+  <div class="head" aria-hidden="true"><span>#</span><span>Chapter</span><span>Rovelli</span><span>NRS / NRS³ in Lean</span><span>Relation</span></div>
+  <div id="rows"></div>
+
+  <p class="note">Relations: <b>coincides</b> — the same statement reached by another route;
+    <b>analogous</b> — the same shape, different objects; <b>departs</b> — the canon says
+    otherwise; <b>declared bridge</b> — a physical identification stated as a hypothesis in Lean
+    and shown satisfiable, not derived; <b>no counterpart</b> — nothing in the canon. The canon is
+    the git repositories; nothing here is cited from older trees.</p>
+</main>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const B = "https://github.com/naype888-cloud/";
+  const M = (f) => `<a href="${B}nava-robertson-schrodinger/blob/main/NavaRobertsonIndependent/Mathematics/${f}.lean"><code>${f.split("_")[0]}</code></a>`;
+  const R = (r, t) => `<a href="${B}${r}"><code>${t || r}</code></a>`;
+  const rows = [
+    ["P", "Prologue", "Walking along the beach",
+     "Reality is a network of granular events; space and time dissolve in quantum gravity.",
+     `NRS / NRS³: the path ${M("D3_PathGraph")} is the space itself; there is no continuum underneath.`, "coincides"],
+    ["1", "Grains", "Roots",
+     "Democritus against Zeno: divisibility has a limit; infinitely many points make nothing extended.",
+     `A finite path (${M("D3_PathGraph")}); the least resolvable is fixed by uncertainty (${M("D21_ElementalNRSInequality")}, ${M("D23_EigenvectorSaturation")}).`, "coincides"],
+    ["2", "The classics", "Roots",
+     "Newton's particles in infinite space; Faraday's lines and Maxwell's field; light as their vibration.",
+     "History of physics; no module.", "none"],
+    ["3", "Albert", "The beginning of the revolution",
+     "Special relativity: a maximal speed and the extended present. General relativity: space is the gravitational field, and it curves.",
+     `A discrete light cone, one site per step (${M("D37f_LightCone")}, ${M("D37g_LiebRobinson")}, ${M("D38_GroupVelocity")}); no Einstein metric.`, "analogous"],
+    ["4", "Quanta", "The beginning of the revolution",
+     "Three lessons: granularity (finite information), indeterminism, and reality as relation between systems.",
+     `Granularity and indeterminism: ${M("D2_Robertson")}, ${M("D21_ElementalNRSInequality")}, every conjugate pair on T_d : P_d (${M("D39_ConjugatePairs")}); ${R("nrs3-poincare")}. Relation: in the canon the channel is induced by transport, not by interaction.`, "departs"],
+    ["5", "Spacetime is quantum", "Quantum space and relational time",
+     "Bronstein: Heisenberg plus Einstein give a minimal length; Wheeler–DeWitt; Wheeler's foam.",
+     `No absolute fixing of position and no infinite well (${M("D21_ElementalNRSInequality")}, ${M("D23_EigenvectorSaturation")}); the lattice is the foam.`, "coincides"],
+    ["6", "Quanta of space", "Quantum space and relational time",
+     "A graph of nodes and links; area and volume have discrete spectra labelled by spins; curvature is read around closed loops.",
+     `Area quantum δ(4)² (${M("D11_MinimalAreaQuantum")}); volume δ(dx)δ(dy)δ(dz), zero at saturation, between δ(4)³ and δ∞³ (${M("D37e_VolumetricQuantum")}); spectrum of the cube (${M("D37c_CubeSpectrum")}); curvature lives on cycles (${M("D16e_DefectCycle")}, ${M("D16f_HandleGraph")}) and the interior is flat (${M("D28_BakryEmeryCurvature")}).`, "analogous"],
+    ["7", "Time does not exist", "Quantum space and relational time",
+     "Time is relational (the pulse and the chandelier); spacetime is a sum of spin foams; the lattice is real, not an approximation.",
+     `The lattice is real (${M("D3_PathGraph")}); time as steps of transport (${M("D16d_DefectPropagation")}); πħ/(2ΔE) as the least time to become another state (${R("nrs3-mandelstam-tamm-cramer-rao")}). Spin foams have no counterpart.`, "analogous"],
+    ["8", "Beyond the big bang", "Beyond space and time",
+     "An electron does not fall into the nucleus; a contracting universe does not reach a point but bounces.",
+     `The mechanism: no infinite well, the least is fixed by uncertainty (${M("D21_ElementalNRSInequality")}, ${M("D23_EigenvectorSaturation")}). The cosmological bounce is not in the canon.`, "coincides"],
+    ["9", "Empirical evidence?", "Beyond space and time",
+     "Loops against strings; Planck 2013; traces in the cosmic background; gravitational waves.",
+     `The canon proposes its own test: <a href="${B}nava-robertson-schrodinger/blob/main/docs/EXPERIMENT.md">waveguide experiment</a>.`, "analogous"],
+    ["10", "The heat of black holes", "Beyond space and time",
+     "No singularity; each loop crossing the horizon is one quantum of area; Hawking's heat from fluctuating quanta of space.",
+     `One link, one quantum: each non-local link closes a cycle with δ∞ (${M("D16f_HandleGraph")}); a cut is a horizon that hides its configurations (${M("D16i_CutHorizon")}); ħ/ΔE is a bound (${R("nrs3-penrose")}). The horizon is the finite-time cone, not a black hole; Hawking's temperature is not derived.`, "analogous"],
+    ["11", "The end of infinity", "Beyond space and time",
+     "c, ħ and the Planck length bound speed, information and length; infinity is the name of what we do not know.",
+     `∞ exists as a limit in ℝ never reached: C∞ = √(π²/3 − 2) (${M("D8_Szego")}, ${M("D9_Monotonicity")}); the gap to it depends on π only (${M("D24_GapFourAsymptote")}).`, "departs"],
+    ["12", "Information", "Beyond space and time",
+     "Shannon and Boltzmann; finite information; Bekenstein: entropy counts the ways quanta of area fill a surface; holography; thermal time.",
+     `Entropy of a cut ∝ its defect, S = (log M/δ∞)·Ω (${M("D16g_CutEntropy")}); configurations are graphs with k new cycles (${M("D16h_CutCycles")}); hidden behind the horizon (${M("D16i_CutHorizon")}). S = A/(4ℓ_P²) is the declared bridge <code>HBekensteinHawking</code>; it forces a₀ = 4ℓ_P² log M/δ∞.`, "declared"],
+    ["13", "The mystery", "Beyond space and time",
+     "Science as reliability without certainty; a world without infinities, made of interacting fields.",
+     "Method: what is proved in Lean is separated from what is declared (Gauss–Bonnet, Bekenstein–Hawking, the physical bridge). Infinity: see chapter 11.", "coincides"],
+  ];
+  const label = { coincides: "coincides", analogous: "analogous", departs: "departs", declared: "declared bridge", none: "no counterpart" };
+  $("rows").innerHTML = rows.map(([n, t, part, rov, can, rel]) =>
+    `<article class="row" data-rel="${rel}">
+      <span class="n">${n}</span>
+      <span class="t">${t}<small>${part}</small></span>
+      <div><span class="lbl">Rovelli</span><p>${rov}</p></div>
+      <div><span class="lbl">NRS / NRS³ in Lean</span><p>${can}</p></div>
+      <div><span class="lbl">Relation</span><span class="badge ${rel}">${label[rel]}</span></div>
+    </article>`).join("");
+  document.querySelectorAll(".filters button").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".filters button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    const f = b.dataset.f;
+    document.querySelectorAll(".row").forEach((r) => { r.style.display = f === "all" || r.dataset.rel === f ? "" : "none"; });
+  }));
+  $("theme").addEventListener("click", () => { const r = document.documentElement, dk = matchMedia("(prefers-color-scheme: dark)").matches;
+    r.dataset.theme = (r.dataset.theme || (dk ? "dark" : "light")) === "dark" ? "light" : "dark"; });
+})();
+</script>
+</body>
+</html>

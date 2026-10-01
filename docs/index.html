@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Defect and curvature on NRS³</title>
+<meta name="description" content="Add handles to the path of transport: each non-local link closes one cycle, each handle adds 2δ∞ of defect and removes 4π of curvature, and the change travels inside the light cone.">
+<style>
+  :root { --bg: #fcfcfb; --panel: #fff; --ink: #0b0b0b; --ink2: #52514e; --muted: #8a8985;
+    --grid: #e4e3df; --blue: #2a78d6; --orange: #eb6834; --soft: rgba(42,120,214,.10); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #111110; --panel: #191918; --ink: #f2f1ee; --ink2: #c4c3bf; --grid: #2c2b29;
+    --blue: #5b9be6; --orange: #f08a5d; --soft: rgba(91,155,230,.14); } }
+  :root[data-theme="dark"] { --bg: #111110; --panel: #191918; --ink: #f2f1ee; --ink2: #c4c3bf;
+    --grid: #2c2b29; --blue: #5b9be6; --orange: #f08a5d; --soft: rgba(91,155,230,.14); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 1.45rem; margin: 0 0 4px; font-weight: 650; }
+  .lead { color: var(--ink2); margin: 0 0 16px; max-width: 800px; }
+  .theme { float: right; font: inherit; font-size: .8rem; padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--grid); background: var(--panel); color: var(--ink); cursor: pointer; }
+  .controls { display: grid; grid-template-columns: 1fr auto; gap: 10px 18px; align-items: center; margin-bottom: 10px; }
+  .sl { display: flex; gap: 10px; align-items: center; font-variant-numeric: tabular-nums; }
+  .sl input { flex: 1; min-width: 0; accent-color: var(--blue); } .sl b { min-width: 2.4em; text-align: right; }
+  button { font: inherit; font-size: .9rem; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--grid); background: var(--panel); color: var(--ink); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--grid); border-radius: 10px; padding: 12px; }
+  .card h2 { font-size: .95rem; margin: 0 0 6px; font-weight: 600; color: var(--ink2); }
+  canvas { width: 100%; display: block; } #graph { aspect-ratio: 16 / 10; } #cone { aspect-ratio: 16 / 10; }
+  .readout { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+  @media (max-width: 560px) { .readout { grid-template-columns: repeat(2, 1fr); } }
+  .stat { background: var(--panel); border: 1px solid var(--grid); border-radius: 8px; padding: 8px 10px; }
+  .stat .k { font-size: .78rem; color: var(--muted); } .stat .v { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+  .note { color: var(--ink2); font-size: .9rem; margin-top: 14px; max-width: 860px; }
+  code { font-size: .88em; } a { color: var(--blue); }
+</style>
+</head>
+<body>
+<main>
+  <button class="theme" id="theme" type="button" aria-label="Toggle dark mode">Theme</button>
+  <h1>The defect of transport fixes the curvature</h1>
+  <p class="lead">Transport moves on the path, a tree. A link between two sites closes a cycle exactly
+    when the sites are not neighbours, and every cycle carries one quantum <code>δ∞ = C∞ − 1</code>.
+    Two links make one handle: <code>+2δ∞</code> of defect and, by Gauss–Bonnet, <code>−4π</code> of
+    curvature. The new cycle is felt only inside the light cone, one site per step.</p>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Handles on the path</h2>
+      <div class="controls">
+        <label class="sl">genus g<input id="g" type="range" min="0" max="5" step="1" value="1"><b id="vg">1</b></label>
+      </div>
+      <canvas id="graph" aria-label="The path with 2g non-local links drawn as arcs"></canvas>
+    </section>
+    <section class="card">
+      <h2>The new cycle stays inside the cone</h2>
+      <div class="controls">
+        <label class="sl">steps k<input id="k" type="range" min="0" max="18" step="1" value="0"><b id="vk">0</b></label>
+        <button type="button" id="play" aria-label="Play">▶</button>
+      </div>
+      <canvas id="cone" aria-label="Difference between transport with and without the link, by site and step"></canvas>
+    </section>
+  </div>
+
+  <div class="readout">
+    <div class="stat"><div class="k">cycle rank = b₁</div><div class="v" id="rb">2</div></div>
+    <div class="stat"><div class="k">defect Ω(Σ_g) = 2g·δ∞</div><div class="v" id="rd">0</div></div>
+    <div class="stat"><div class="k">curvature ∫K dA = 2π(2 − 2g)</div><div class="v" id="rk">0</div></div>
+    <div class="stat"><div class="k">max |difference| outside the cone</div><div class="v" id="ro">0</div></div>
+  </div>
+
+  <p class="note">Left: the path on <code>n + 1</code> sites with the <code>2g</code> links
+    <code>{0, j + 2}</code> of <code>handleGraph</code>; same colour, same handle. Lean:
+    <code>cycleRank_handleGraph</code>, <code>handleGraph_defect</code>, <code>handle_quanta</code>
+    (Gauss–Bonnet is a declared hypothesis). Right: <code>|(L<sup>k</sup> − T<sup>k</sup>)ψ|</code> on 41
+    sites for the transport <code>L</code> with one link <code>{17, 23}</code> and a random state ψ;
+    grey cells are exactly zero, as <code>link_inside_cone</code> proves. Values on this page are
+    computed in your browser. <a href="https://github.com/naype888-cloud/nrs3-defect-curvature">source</a>.</p>
+</main>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const DINF = Math.sqrt(Math.PI ** 2 / 3 - 2) - 1;
+  const D = 41, A = 17, B = 23, EPS = 0.35, KMAX = 18;
+  let g = 1, k = 0, playing = false, acc = 0, last = 0;
+
+  function fit(c) {
+    const r = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr);
+    const x = c.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); return [x, r.width, r.height];
+  }
+
+  // transport T = A_d / rho_d, the link adds EPS on (A, B) and (B, A); complex state as [re, im]
+  const rho = 2 * Math.cos(Math.PI / (D + 1));
+  function step(v, link) {
+    const w = v.map(() => [0, 0]);
+    for (let i = 0; i < D; i++) {
+      for (const j of [i - 1, i + 1]) if (j >= 0 && j < D) { w[i][0] += v[j][0] / rho; w[i][1] += v[j][1] / rho; }
+      if (link && i === A) { w[i][0] += EPS * v[B][0]; w[i][1] += EPS * v[B][1]; }
+      if (link && i === B) { w[i][0] += EPS * v[A][0]; w[i][1] += EPS * v[A][1]; }
+    }
+    return w;
+  }
+  let seed = 16; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647 - 0.5; };
+  let psi = Array.from({ length: D }, () => [rnd(), rnd()]);
+  const nrm = Math.hypot(...psi.flat()); psi = psi.map(([a, b]) => [a / nrm, b / nrm]);
+  const diff = []; let vt = psi, vl = psi, outside = 0;
+  for (let s = 0; s <= KMAX; s++) {
+    diff.push(vt.map((x, i) => Math.hypot(vl[i][0] - x[0], vl[i][1] - x[1])));
+    vt = step(vt, false); vl = step(vl, true);
+  }
+  for (let s = 0; s <= KMAX; s++) for (let i = 0; i < D; i++)
+    if (s <= Math.abs(i - A) && s <= Math.abs(i - B)) outside = Math.max(outside, diff[s][i]);
+
+  function drawGraph() {
+    const [x, w, h] = fit($("graph")), n = Math.max(9, 2 * g + 3);
+    const pad = 22, dx = (w - 2 * pad) / n, y0 = h - 40;
+    x.clearRect(0, 0, w, h);
+    x.strokeStyle = css("--ink2"); x.lineWidth = 2; x.beginPath(); x.moveTo(pad, y0); x.lineTo(pad + n * dx, y0); x.stroke();
+    for (let j = 0; j < 2 * g; j++) {
+      const b = j + 2, r = b * dx / 2, ry = Math.max(r * 0.35, (y0 - 34) * b / (2 * g + 1));
+      x.strokeStyle = (Math.floor(j / 2) % 2 === 0) ? css("--orange") : css("--blue"); x.lineWidth = 2;
+      x.beginPath(); x.ellipse(pad + r, y0, r, ry, 0, Math.PI, 2 * Math.PI); x.stroke();
+    }
+    for (let i = 0; i <= n; i++) {
+      x.fillStyle = css("--panel"); x.strokeStyle = css("--ink"); x.lineWidth = 1.4;
+      x.beginPath(); x.arc(pad + i * dx, y0, 5.5, 0, 2 * Math.PI); x.fill(); x.stroke();
+      x.fillStyle = css("--muted"); x.font = "11px system-ui"; x.textAlign = "center"; x.fillText(i, pad + i * dx, y0 + 22);
+    }
+    x.fillStyle = css("--ink2"); x.font = "12px system-ui"; x.textAlign = "left";
+    x.fillText(g === 0 ? "a tree: no cycle, sphere" : `${2 * g} links = ${g} handle${g > 1 ? "s" : ""}`, pad, 16);
+  }
+
+  function drawCone() {
+    const [x, w, h] = fit($("cone")), l = 34, b = 30, cw = (w - l - 8) / D, ch = (h - b - 8) / (KMAX + 1);
+    x.clearRect(0, 0, w, h);
+    const blue = css("--blue"), grid = css("--grid");
+    for (let s = 0; s <= k; s++) for (let i = 0; i < D; i++) {
+      const v = diff[s][i], px = l + i * cw, py = h - b - (s + 1) * ch;
+      if (v === 0) { x.fillStyle = grid; x.globalAlpha = 1; }
+      else { x.fillStyle = blue; x.globalAlpha = Math.max(0.12, Math.min(1, (Math.log10(v) + 6) / 6)); }
+      x.fillRect(px, py, cw + 0.5, ch + 0.5);
+    }
+    x.globalAlpha = 1; x.strokeStyle = css("--orange"); x.lineWidth = 1.6; x.setLineDash([5, 4]);
+    for (const [c, sg] of [[A, -1], [B, 1]]) {
+      x.beginPath(); x.moveTo(l + (c + 0.5) * cw, h - b - 0.5 * ch);
+      x.lineTo(l + (c + 0.5 + sg * (KMAX + 0.5)) * cw, h - b - (KMAX + 1) * ch); x.stroke();
+    }
+    x.setLineDash([]); x.fillStyle = css("--muted"); x.font = "11px system-ui"; x.textAlign = "center";
+    for (const i of [0, 10, A, B, 30, 40]) x.fillText(i, l + (i + 0.5) * cw, h - b + 14);
+    x.fillText("site i", l + (w - l) / 2, h - 2);
+    x.textAlign = "right"; for (const s of [0, 6, 12, 18]) x.fillText(s, l - 6, h - b - (s + 0.5) * ch + 4);
+    x.save(); x.translate(10, (h - b) / 2); x.rotate(-Math.PI / 2); x.textAlign = "center"; x.fillText("steps k", 0, 0); x.restore();
+  }
+
+  function update() {
+    $("vg").textContent = g; $("vk").textContent = k;
+    $("rb").textContent = 2 * g; $("rd").textContent = (2 * g * DINF).toFixed(5);
+    const kc = 2 * (2 - 2 * g); $("rk").textContent = kc === 0 ? "0" : `${kc}π`;
+    $("ro").textContent = outside === 0 ? "0 (exact)" : outside.toExponential(2);
+    drawGraph(); drawCone();
+  }
+  function tick(ts) {
+    const dt = last ? (ts - last) / 1000 : 0; last = ts;
+    if (playing) { acc += dt; if (acc > 0.35) { acc = 0; k = k >= KMAX ? 0 : k + 1; $("k").value = k; update(); } }
+    requestAnimationFrame(tick);
+  }
+  $("g").addEventListener("input", (e) => { g = +e.target.value; update(); });
+  $("k").addEventListener("input", (e) => { k = +e.target.value; update(); });
+  $("play").addEventListener("click", (e) => { playing = !playing; e.target.textContent = playing ? "❚❚" : "▶";
+    e.target.setAttribute("aria-label", playing ? "Pause" : "Play"); });
+  $("theme").addEventListener("click", () => { const r = document.documentElement, dk = matchMedia("(prefers-color-scheme: dark)").matches;
+    r.dataset.theme = (r.dataset.theme || (dk ? "dark" : "light")) === "dark" ? "light" : "dark"; update(); });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", update);
+  window.addEventListener("resize", update);
+  update(); requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

@@ -30,7 +30,10 @@
   @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
   .card { background: var(--panel); border: 1px solid var(--grid); border-radius: 10px; padding: 12px; }
   .card h2 { font-size: .95rem; margin: 0 0 6px; font-weight: 600; color: var(--ink2); }
-  canvas { width: 100%; display: block; } #graph { aspect-ratio: 16 / 10; } #cone { aspect-ratio: 16 / 10; }
+  canvas { width: 100%; display: block; } #graph { aspect-ratio: 16 / 10; } #cone { aspect-ratio: 16 / 10; } #ent { aspect-ratio: 16 / 6; }
+  .sec { margin-top: 14px; }
+  .controls3 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; margin-bottom: 10px; }
+  @media (max-width: 700px) { .controls3 { grid-template-columns: 1fr; } }
   .readout { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
   @media (max-width: 560px) { .readout { grid-template-columns: repeat(2, 1fr); } }
   .stat { background: var(--panel); border: 1px solid var(--grid); border-radius: 8px; padding: 8px 10px; }
@@ -73,13 +76,34 @@
     <div class="stat"><div class="k">max |difference| outside the cone</div><div class="v" id="ro">0</div></div>
   </div>
 
+  <section class="card sec">
+    <h2>The entropy of a cut counts its quanta</h2>
+    <div class="controls3">
+      <label class="sl">cut after site c<input id="c" type="range" min="1" max="19" step="1" value="10"><b id="vc">10</b></label>
+      <label class="sl">quanta k<input id="q" type="range" min="0" max="40" step="1" value="8"><b id="vq">8</b></label>
+    </div>
+    <canvas id="ent" aria-label="Entropy against the number of quanta on the cut"></canvas>
+    <div class="readout">
+      <div class="stat"><div class="k">crossing links M (21 sites)</div><div class="v" id="rm">0</div></div>
+      <div class="stat"><div class="k">defect Ω = k·δ∞</div><div class="v" id="rw">0</div></div>
+      <div class="stat"><div class="k">S = k·log M = (log M/δ∞)·Ω</div><div class="v" id="rs">0</div></div>
+      <div class="stat"><div class="k">log #graphs = log C(M, k)</div><div class="v" id="rl">0</div></div>
+    </div>
+  </section>
+
   <p class="note">Left: the path on <code>n + 1</code> sites with the <code>2g</code> links
     <code>{0, j + 2}</code> of <code>handleGraph</code>; same colour, same handle. Lean:
     <code>cycleRank_handleGraph</code>, <code>handleGraph_defect</code>, <code>handle_quanta</code>
     (Gauss–Bonnet is a declared hypothesis). Right: <code>|(L<sup>k</sup> − T<sup>k</sup>)ψ|</code> on 41
     sites for the transport <code>L</code> with one link <code>{17, 23}</code> and a random state ψ;
     grey cells are exactly zero, as <code>link_inside_cone</code> proves. Values on this page are
-    computed in your browser. <a href="https://github.com/naype888-cloud/nrs3-defect-curvature">source</a>.</p>
+    computed in your browser. Bottom: the cut of a path with 21 sites; <code>k</code> quanta on its
+    <code>M</code> crossing links have entropy <code>k log M</code>, proportional to the defect
+    (<code>entropy_counts_defect</code>); <code>k</code> distinct links are the
+    <code>C(M, k)</code> graphs with <code>k</code> new cycles, never above <code>M log 2</code>.
+    A far site cannot tell them apart while the cone has not reached the cut
+    (<code>horizon_hides_entropy</code>). The Bekenstein–Hawking factor 1/4 is a declared bridge,
+    not derived. <a href="https://github.com/naype888-cloud/nrs3-defect-curvature">source</a>.</p>
 </main>
 <script>
 (() => {
@@ -158,12 +182,46 @@
     x.save(); x.translate(10, (h - b) / 2); x.rotate(-Math.PI / 2); x.textAlign = "center"; x.fillText("steps k", 0, 0); x.restore();
   }
 
+
+  const NS = 20; let cc = 10, q = 8;
+  function crossCount(c) { let m = 0;
+    for (let a = 0; a <= NS; a++) for (let b = 0; b <= NS; b++) if (a <= c && c < b && a + 2 <= b) m++; return m; }
+  function logChoose(m, r) { if (r > m) return NaN; let s = 0; for (let i = 0; i < r; i++) s += Math.log((m - i) / (i + 1)); return s; }
+  function drawEnt() {
+    const [x, w, h] = fit($("ent")), m = crossCount(cc), KM = 40, l = 40, b = 26;
+    const smax = Math.max(KM * Math.log(m), 1), px = (t) => l + t / KM * (w - l - 10), py = (v) => h - b - v / smax * (h - b - 10);
+    x.clearRect(0, 0, w, h);
+    x.strokeStyle = css("--grid"); x.lineWidth = 1; x.beginPath(); x.moveTo(l, h - b); x.lineTo(w - 10, h - b); x.moveTo(l, 10); x.lineTo(l, h - b); x.stroke();
+    x.strokeStyle = css("--muted"); x.setLineDash([5, 4]); x.beginPath(); x.moveTo(l, py(m * Math.log(2))); x.lineTo(w - 10, py(m * Math.log(2))); x.stroke(); x.setLineDash([]);
+    x.strokeStyle = css("--blue"); x.lineWidth = 2; x.beginPath(); x.moveTo(px(0), py(0)); x.lineTo(px(KM), py(KM * Math.log(m))); x.stroke();
+    x.fillStyle = css("--orange");
+    for (let t = 0; t <= Math.min(KM, m); t++) { x.beginPath(); x.arc(px(t), py(logChoose(m, t)), 2.6, 0, 2 * Math.PI); x.fill(); }
+    x.fillStyle = css("--ink"); x.beginPath(); x.arc(px(q), py(q * Math.log(m)), 5, 0, 2 * Math.PI); x.fill();
+    x.fillStyle = css("--muted"); x.font = "11px system-ui"; x.textAlign = "center";
+    for (const t of [0, 10, 20, 30, 40]) x.fillText(t, px(t), h - b + 14);
+    x.fillText("quanta on the cut k", l + (w - l) / 2, h - 1);
+    x.textAlign = "right";
+    for (const v of [0, 50, 100, 150]) if (v <= smax) x.fillText(v, l - 6, py(v) + 4);
+    x.save(); x.translate(10, (h - b) / 2); x.rotate(-Math.PI / 2); x.textAlign = "center"; x.fillText("entropy S", 0, 0); x.restore();
+    x.textAlign = "left"; x.fillStyle = css("--ink2");
+    x.fillText("blue: k·log M   orange: log C(M, k)   dashed: M·log 2", l + 6, 16);
+  }
+  function updateEnt() {
+    const m = crossCount(cc);
+    $("vc").textContent = cc; $("vq").textContent = q; $("rm").textContent = m;
+    $("rw").textContent = (q * DINF).toFixed(5); $("rs").textContent = (q * Math.log(m)).toFixed(3);
+    const lc = logChoose(m, q); $("rl").textContent = Number.isNaN(lc) ? "k > M" : lc.toFixed(3);
+    drawEnt();
+  }
+  $("c").addEventListener("input", (e) => { cc = +e.target.value; updateEnt(); });
+  $("q").addEventListener("input", (e) => { q = +e.target.value; updateEnt(); });
+
   function update() {
     $("vg").textContent = g; $("vk").textContent = k;
     $("rb").textContent = 2 * g; $("rd").textContent = (2 * g * DINF).toFixed(5);
     const kc = 2 * (2 - 2 * g); $("rk").textContent = kc === 0 ? "0" : `${kc}π`;
     $("ro").textContent = outside === 0 ? "0 (exact)" : outside.toExponential(2);
-    drawGraph(); drawCone();
+    drawGraph(); drawCone(); updateEnt();
   }
   function tick(ts) {
     const dt = last ? (ts - last) / 1000 : 0; last = ts;

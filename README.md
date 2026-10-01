@@ -20,14 +20,27 @@ cone, one site per step. In Lean 4.
 | the new cycle is unseen at distance `≥ k` for `k` steps, for every state | `link_inside_cone` |
 | at `d = 2, 3` the defect is `0` while the curvature still jumps; from `d = 4`, `0 < 2δ(d) < 2δ∞` | `quantum_by_dimension` |
 
-The proofs are the modules `D16`–`D16f` of the
+### Entropy and horizon
+
+![Entropy and horizon](docs/figures/entropy_horizon.png)
+
+| Statement | Lean |
+|---|---|
+| `k` quanta on the `M` crossing links of a cut have entropy `k log M = (log M / δ∞)·Ω`; `k` distinct links are exactly the graphs with `k` new cycles | `entropy_counts_defect` |
+| a far site reads every configuration of `m` links near the cut as plain transport for `k` steps; `C(M_w, m)` of them, each with defect `m δ∞` | `horizon_hides_entropy` |
+| under the declared bridge `S = A/(4ℓ_P²)`, `A = a₀ Ω`, the area per unit of defect is `a₀ = 4ℓ_P² log M / δ∞` | `bekenstein_hawking_fixes_area` |
+
+The proofs are the modules `D16`–`D16i` of the
 [base repository](https://github.com/naype888-cloud/nava-robertson-schrodinger), which this package requires;
-`NRS3DefectCurvature/Chain.lean` states the chain in one place.
+`NRS3DefectCurvature/Chain.lean` and `NRS3DefectCurvature/Entropy.lean` state them in one place.
 
 ## What is declared
 
 - **Gauss–Bonnet**, `∫K dA = 2πχ` (`HGaussBonnet`): Mathlib has no Gauss–Bonnet. It is shown
   satisfiable.
+- **Bekenstein–Hawking**, `S = A/(4ℓ_P²)` (`HBekensteinHawking`): the `1/4` and the scale are
+  not derived; the bridge is shown satisfiable. The coefficient `log M` depends on the cut.
+  The horizon here is the finite-time light cone, not a black hole.
 - The classical cell structure of `Σ_g`, whose `1`-skeleton has `2g` independent cycles. The
   graph of transport realizes those `2g` cycles (`cycleRank_handleGraph`); that it is the
   `1`-skeleton of a surface is not formalized.
@@ -46,7 +59,8 @@ lake env lean Verification/Axioms.lean   # only propext, Classical.choice, Quot.
 ```
 
 Every file: no `sorry`, lines of at most 100 characters, English headers. The figure:
-`python3 docs/simulation/figures_defect_curvature.py`.
+`python3 docs/simulation/figures_defect_curvature.py` and
+`figures_entropy_horizon.py`.
 
 ## The mosaic
 

@@ -31,9 +31,28 @@ cone, one site per step. In Lean 4.
 | a far site reads every configuration of `m` links near the cut as plain transport for `k` steps; `C(M_w, m)` of them, each with defect `m δ∞` | `horizon_hides_entropy` |
 | under the declared bridge `S = A/(4ℓ_P²)`, `A = a₀ Ω`, the area per unit of defect is `a₀ = 4ℓ_P² log M / δ∞` | `bekenstein_hawking_fixes_area` |
 
+### The entropy of a surface counts its curvature
+
+The `2g` links of `Σ_g` all cross the cut between the sites `0` and `1`, so the surface is one of
+the configurations the entropy counts. Boltzmann–Planck `S = log W`, `W = M^{2g}`, and Einstein's
+curvature through Gauss–Bonnet give one line:
+
+**`S(Σ_g) = (log M / 2π) · (4π − ∫K dA)`**
+
+| Statement | Lean |
+|---|---|
+| the graph of `Σ_g` is the path with the links `{0, j + 2}` | `handleGraph_eq_linksGraph` |
+| those `2g` links are a configuration of `2g` quanta on the cut at `0`, with the graph of `Σ_g` | `handleLinks_mem` |
+| `S(Σ_g) = (log M / 2π)(4π − ∫K dA)` | `entropy_eq_curvature` |
+| one handle: `2 log M` of entropy and `−4π` of curvature | `entropy_handle_step` |
+
+`δ∞` cancels in the ratio and stays positive in each link: the defect is not swept away. The only
+hypothesis is `HGaussBonnet`.
+
 The proofs are the modules `D16`–`D16i` of the
 [base repository](https://github.com/naype888-cloud/nava-robertson-schrodinger), which this package requires;
-`NRS3DefectCurvature/Chain.lean` and `NRS3DefectCurvature/Entropy.lean` state them in one place.
+`NRS3DefectCurvature/Chain.lean` and `NRS3DefectCurvature/Entropy.lean` state them in one place;
+`NRS3DefectCurvature/EntropyCurvature.lean` joins the two.
 
 ## What is declared
 

@@ -10,3 +10,6 @@ import NRS3DefectCurvature
 #print axioms DefectEntropy.entropy_counts_defect
 #print axioms DefectEntropy.horizon_hides_entropy
 #print axioms DefectEntropy.bekenstein_hawking_fixes_area
+#print axioms EntropyCurvature.handleLinks_mem
+#print axioms EntropyCurvature.entropy_eq_curvature
+#print axioms EntropyCurvature.entropy_handle_step

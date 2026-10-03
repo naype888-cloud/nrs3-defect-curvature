@@ -7,6 +7,7 @@ and under Gauss–Bonnet that defect fixes its total curvature. The change trave
 cone, one site per step. In Lean 4.
 
 **[▶ Try it: add handles and watch the cone](https://naype888-cloud.github.io/nrs3-defect-curvature/)** ·
+**[▶ Try it: the entropy of a cut and of a surface](https://naype888-cloud.github.io/nrs3-defect-curvature/entropy.html)** ·
 **[Rovelli's *Reality Is Not What It Seems*, chapter by chapter](https://naype888-cloud.github.io/nrs3-defect-curvature/rovelli.html)**
 
 ![NRS³ · Defect and curvature](docs/figures/defect_curvature.png)
@@ -48,6 +49,8 @@ curvature through Gauss–Bonnet give one line:
 
 `δ∞` cancels in the ratio and stays positive in each link: the defect is not swept away. The only
 hypothesis is `HGaussBonnet`.
+
+![Entropy and curvature](docs/figures/entropy_curvature.png)
 
 The proofs are the modules `D16`–`D16i` of the
 [base repository](https://github.com/naype888-cloud/nava-robertson-schrodinger), which this package requires;

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entropy of a cut</title>
+<meta name="description" content="The entropy of a cut counts its quanta, and the entropy of a surface counts its curvature: S(Σ_g) = (log M / 2π)(4π − ∫K dA), live.">
+<style>
+  :root { --bg: #fcfcfb; --panel: #fff; --ink: #0b0b0b; --ink2: #52514e; --muted: #8a8985;
+    --grid: #e4e3df; --blue: #2a78d6; --orange: #eb6834; --soft: rgba(42,120,214,.10); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #111110; --panel: #191918; --ink: #f2f1ee; --ink2: #c4c3bf; --grid: #2c2b29;
+    --blue: #5b9be6; --orange: #f08a5d; --soft: rgba(91,155,230,.14); } }
+  :root[data-theme="dark"] { --bg: #111110; --panel: #191918; --ink: #f2f1ee; --ink2: #c4c3bf;
+    --grid: #2c2b29; --blue: #5b9be6; --orange: #f08a5d; --soft: rgba(91,155,230,.14); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 1.45rem; margin: 0 0 4px; font-weight: 650; }
+  .lead { color: var(--ink2); margin: 0 0 16px; max-width: 800px; }
+  .theme { float: right; font: inherit; font-size: .8rem; padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--grid); background: var(--panel); color: var(--ink); cursor: pointer; }
+  .controls { display: grid; grid-template-columns: 1fr auto; gap: 10px 18px; align-items: center; margin-bottom: 10px; }
+  .sl { display: flex; gap: 10px; align-items: center; font-variant-numeric: tabular-nums; }
+  .sl input { flex: 1; min-width: 0; accent-color: var(--blue); } .sl b { min-width: 2.4em; text-align: right; }
+  button { font: inherit; font-size: .9rem; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--grid); background: var(--panel); color: var(--ink); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--grid); border-radius: 10px; padding: 12px; }
+  .card h2 { font-size: .95rem; margin: 0 0 6px; font-weight: 600; color: var(--ink2); }
+  canvas { width: 100%; display: block; } #graph { aspect-ratio: 16 / 10; } #cone { aspect-ratio: 16 / 10; } #ent { aspect-ratio: 16 / 6; } #surf { aspect-ratio: 16 / 9; } #line { aspect-ratio: 16 / 9; }
+  .sec { margin-top: 14px; }
+  .controls3 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; margin-bottom: 10px; }
+  @media (max-width: 700px) { .controls3 { grid-template-columns: 1fr; } }
+  .readout { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+  @media (max-width: 560px) { .readout { grid-template-columns: repeat(2, 1fr); } }
+  .stat { background: var(--panel); border: 1px solid var(--grid); border-radius: 8px; padding: 8px 10px; }
+  .stat .k { font-size: .78rem; color: var(--muted); } .stat .v { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+  .note { color: var(--ink2); font-size: .9rem; margin-top: 14px; max-width: 860px; }
+  code { font-size: .88em; } a { color: var(--blue); }
+  .tabs { display: flex; gap: 6px; margin: 0 0 10px; font-size: .85rem; } .tabs a { padding: 3px 12px; border-radius: 999px; border: 1px solid var(--grid); color: var(--ink2); text-decoration: none; } .tabs a[aria-current] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+</style>
+</head>
+<body>
+<main>
+  <button class="theme" id="theme" type="button" aria-label="Toggle dark mode">Theme</button>
+  <nav class="tabs" aria-label="Pages"><a href="./">Defect and curvature</a><a href="entropy.html" aria-current="page">Entropy</a><a href="rovelli.html">Rovelli, chapter by chapter</a></nav>
+  <h1>The entropy counts the defect, and the defect fixes the curvature</h1>
+  <p class="lead">Boltzmann and Planck: the entropy is the logarithm of the number of configurations.
+    On a cut with <code>M</code> crossing links, <code>k</code> quanta give <code>S = k log M</code>.
+    The <code>2g</code> links of a surface of genus <code>g</code> all cross the cut after site 0, so
+    the surface is one of those configurations, and Gauss–Bonnet turns its defect into curvature:</p>
+  <p style="text-align:center;font-size:1.08rem;margin:2px 0 14px"><code>S(Σ_g) = (log M / 2π) · (4π − ∫K dA)</code></p>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Σ_g on the cut after site 0</h2>
+      <div class="controls3">
+        <label class="sl">genus g<input id="sg" type="range" min="0" max="5" step="1" value="2"><b id="vsg">2</b></label>
+        <label class="sl">sites n + 1<input id="sn" type="range" min="12" max="21" step="1" value="12"><b id="vsn">12</b></label>
+      </div>
+      <canvas id="surf" aria-label="The path with the 2g links of the surface crossing the cut after site 0"></canvas>
+    </section>
+    <section class="card">
+      <h2>Entropy against curvature</h2>
+      <canvas id="line" aria-label="Entropy against total curvature for every genus"></canvas>
+    </section>
+  </div>
+  <div class="readout">
+    <div class="stat"><div class="k">M = crossing links at the cut after 0</div><div class="v" id="sm">0</div></div>
+    <div class="stat"><div class="k">S = log M^(2g)</div><div class="v" id="ss">0</div></div>
+    <div class="stat"><div class="k">∫K dA = 2π(2 − 2g)</div><div class="v" id="sk">0</div></div>
+    <div class="stat"><div class="k">(log M / 2π)(4π − ∫K dA)</div><div class="v" id="sr">0</div></div>
+  </div>
+
+  <section class="card sec">
+    <h2>The entropy of a cut counts its quanta</h2>
+    <div class="controls3">
+      <label class="sl">cut after site c<input id="c" type="range" min="1" max="19" step="1" value="10"><b id="vc">10</b></label>
+      <label class="sl">quanta k<input id="q" type="range" min="0" max="40" step="1" value="8"><b id="vq">8</b></label>
+    </div>
+    <canvas id="ent" aria-label="Entropy against the number of quanta on the cut"></canvas>
+    <div class="readout">
+      <div class="stat"><div class="k">crossing links M (21 sites)</div><div class="v" id="rm">0</div></div>
+      <div class="stat"><div class="k">defect Ω = k·δ∞</div><div class="v" id="rw">0</div></div>
+      <div class="stat"><div class="k">S = k·log M = (log M/δ∞)·Ω</div><div class="v" id="rs">0</div></div>
+      <div class="stat"><div class="k">log #graphs = log C(M, k)</div><div class="v" id="rl">0</div></div>
+    </div>
+  </section>
+
+  <p class="note">Top: <code>handleLinks_mem</code> (the <code>2g</code> links of <code>Σ_g</code> are a configuration of
+    <code>2g</code> quanta on the cut at 0), <code>entropy_eq_curvature</code> and <code>entropy_handle_step</code>
+    (one handle: <code>+2 log M</code> of entropy, <code>−4π</code> of curvature). <code>δ∞</code> cancels in the
+    ratio and stays positive in each link: the defect is not swept away. Bottom: <code>k</code> quanta on the
+    <code>M</code> crossing links of a cut of a path with 21 sites have entropy <code>k log M</code>, proportional to
+    the defect (<code>entropy_counts_defect</code>); <code>k</code> distinct links are the <code>C(M, k)</code> graphs
+    with <code>k</code> new cycles, never above <code>M log 2</code>. A far site cannot tell them apart while the
+    cone has not reached the cut (<code>horizon_hides_entropy</code>). Gauss–Bonnet is the declared hypothesis
+    <code>HGaussBonnet</code>; the Bekenstein–Hawking factor 1/4 is a declared bridge, not derived.
+    Values are computed in your browser. <a href="https://github.com/naype888-cloud/nrs3-defect-curvature">source</a>.</p>
+</main>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const DINF = Math.sqrt(Math.PI ** 2 / 3 - 2) - 1;
+  function fit(c) {
+    const r = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr);
+    const x = c.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); return [x, r.width, r.height];
+  }
+  let sg = 2, sn = 11;
+  // crossing links at the cut after 0 on n + 1 sites: {0, b}, b ≥ 2
+  const m0 = () => sn - 1;
+  function drawSurf() {
+    const [x, w, h] = fit($("surf")), n = sn, pad = 18, dx = (w - 2 * pad) / n, y0 = h - 34;
+    x.clearRect(0, 0, w, h);
+    x.strokeStyle = css("--grid"); x.lineWidth = 1.2;
+    for (let b = 2; b <= n; b++) { const r = b * dx / 2; x.beginPath(); x.ellipse(pad + r, y0, r, Math.min(r * .55, y0 - 24), 0, Math.PI, 2 * Math.PI); x.stroke(); }
+    x.strokeStyle = css("--ink2"); x.lineWidth = 2; x.beginPath(); x.moveTo(pad, y0); x.lineTo(pad + n * dx, y0); x.stroke();
+    for (let j = 0; j < 2 * sg; j++) {
+      const b = j + 2, r = b * dx / 2;
+      x.strokeStyle = (Math.floor(j / 2) % 2 === 0) ? css("--orange") : css("--blue"); x.lineWidth = 2.4;
+      x.beginPath(); x.ellipse(pad + r, y0, r, Math.min(r * .55, y0 - 24), 0, Math.PI, 2 * Math.PI); x.stroke();
+    }
+    x.strokeStyle = css("--ink"); x.setLineDash([5, 4]); x.lineWidth = 1.3;
+    x.beginPath(); x.moveTo(pad + dx / 2, 8); x.lineTo(pad + dx / 2, h - 6); x.stroke(); x.setLineDash([]);
+    for (let i = 0; i <= n; i++) {
+      x.fillStyle = css("--panel"); x.strokeStyle = css("--ink"); x.lineWidth = 1.3;
+      x.beginPath(); x.arc(pad + i * dx, y0, 4.5, 0, 2 * Math.PI); x.fill(); x.stroke();
+      x.fillStyle = css("--muted"); x.font = "10px system-ui"; x.textAlign = "center"; x.fillText(i, pad + i * dx, y0 + 18);
+    }
+    x.textAlign = "left"; x.fillStyle = css("--ink2"); x.font = "12px system-ui";
+    x.fillText(`grey: the ${m0()} crossing links; coloured: the ${2 * sg} of Σ_${sg}`, pad + dx / 2 + 6, 16);
+  }
+  function drawLine() {
+    const [x, w, h] = fit($("line")), l = 44, b = 30, M = m0(), G = 5;
+    const kmin = 2 * Math.PI * (2 - 2 * G) - 4, kmax = 4 * Math.PI + 4, smax = 2 * G * Math.log(20) + 1;
+    const px = (k) => l + (k - kmin) / (kmax - kmin) * (w - l - 10), py = (s) => h - b - s / smax * (h - b - 12);
+    x.clearRect(0, 0, w, h);
+    x.strokeStyle = css("--grid"); x.lineWidth = 1; x.beginPath(); x.moveTo(l, h - b); x.lineTo(w - 10, h - b); x.moveTo(l, 10); x.lineTo(l, h - b); x.stroke();
+    x.strokeStyle = css("--blue"); x.lineWidth = 2; x.beginPath();
+    x.moveTo(px(kmin), py(Math.log(M) / (2 * Math.PI) * (4 * Math.PI - kmin))); x.lineTo(px(4 * Math.PI), py(0)); x.stroke();
+    for (let g = 0; g <= G; g++) {
+      const k = 2 * Math.PI * (2 - 2 * g), s = 2 * g * Math.log(M);
+      x.fillStyle = g === sg ? css("--orange") : css("--blue"); x.beginPath(); x.arc(px(k), py(s), g === sg ? 6.5 : 4, 0, 2 * Math.PI); x.fill();
+      x.fillStyle = css("--muted"); x.font = "10px system-ui"; x.textAlign = "center"; x.fillText(`g=${g}`, px(k), h - b + 13);
+    }
+    x.fillStyle = css("--muted"); x.font = "11px system-ui"; x.textAlign = "center";
+    x.fillText("total curvature ∫K dA", l + (w - l) / 2, h - 3);
+    x.save(); x.translate(12, (h - b) / 2); x.rotate(-Math.PI / 2); x.fillText("entropy S", 0, 0); x.restore();
+    x.textAlign = "left"; x.fillStyle = css("--ink2"); x.font = "12px system-ui";
+    x.fillText(`slope −log M / 2π = ${(-Math.log(M) / (2 * Math.PI)).toFixed(4)}`, l + 8, 18);
+  }
+  function updateSurf() {
+    const M = m0(), S = 2 * sg * Math.log(M), K = 2 * Math.PI * (2 - 2 * sg);
+    $("vsg").textContent = sg; $("vsn").textContent = sn + 1; $("sm").textContent = M;
+    $("ss").textContent = S.toFixed(4); $("sk").textContent = K === 0 ? "0" : `${(2 - 2 * sg) * 2}π`;
+    $("sr").textContent = (Math.log(M) / (2 * Math.PI) * (4 * Math.PI - K)).toFixed(4);
+    drawSurf(); drawLine();
+  }
+  $("sg").addEventListener("input", (e) => { sg = +e.target.value; updateSurf(); });
+  $("sn").addEventListener("input", (e) => { sn = +e.target.value - 1; updateSurf(); });
+
+  const NS = 20; let cc = 10, q = 8;
+  function crossCount(c) { let m = 0;
+    for (let a = 0; a <= NS; a++) for (let b = 0; b <= NS; b++) if (a <= c && c < b && a + 2 <= b) m++; return m; }
+  function logChoose(m, r) { if (r > m) return NaN; let s = 0; for (let i = 0; i < r; i++) s += Math.log((m - i) / (i + 1)); return s; }
+  function drawEnt() {
+    const [x, w, h] = fit($("ent")), m = crossCount(cc), KM = 40, l = 40, b = 26;
+    const smax = Math.max(KM * Math.log(m), 1), px = (t) => l + t / KM * (w - l - 10), py = (v) => h - b - v / smax * (h - b - 10);
+    x.clearRect(0, 0, w, h);
+    x.strokeStyle = css("--grid"); x.lineWidth = 1; x.beginPath(); x.moveTo(l, h - b); x.lineTo(w - 10, h - b); x.moveTo(l, 10); x.lineTo(l, h - b); x.stroke();
+    x.strokeStyle = css("--muted"); x.setLineDash([5, 4]); x.beginPath(); x.moveTo(l, py(m * Math.log(2))); x.lineTo(w - 10, py(m * Math.log(2))); x.stroke(); x.setLineDash([]);
+    x.strokeStyle = css("--blue"); x.lineWidth = 2; x.beginPath(); x.moveTo(px(0), py(0)); x.lineTo(px(KM), py(KM * Math.log(m))); x.stroke();
+    x.fillStyle = css("--orange");
+    for (let t = 0; t <= Math.min(KM, m); t++) { x.beginPath(); x.arc(px(t), py(logChoose(m, t)), 2.6, 0, 2 * Math.PI); x.fill(); }
+    x.fillStyle = css("--ink"); x.beginPath(); x.arc(px(q), py(q * Math.log(m)), 5, 0, 2 * Math.PI); x.fill();
+    x.fillStyle = css("--muted"); x.font = "11px system-ui"; x.textAlign = "center";
+    for (const t of [0, 10, 20, 30, 40]) x.fillText(t, px(t), h - b + 14);
+    x.fillText("quanta on the cut k", l + (w - l) / 2, h - 1);
+    x.textAlign = "right";
+    for (const v of [0, 50, 100, 150]) if (v <= smax) x.fillText(v, l - 6, py(v) + 4);
+    x.save(); x.translate(10, (h - b) / 2); x.rotate(-Math.PI / 2); x.textAlign = "center"; x.fillText("entropy S", 0, 0); x.restore();
+    x.textAlign = "left"; x.fillStyle = css("--ink2");
+    x.fillText("blue: k·log M   orange: log C(M, k)   dashed: M·log 2", l + 6, 16);
+  }
+  function updateEnt() {
+    const m = crossCount(cc);
+    $("vc").textContent = cc; $("vq").textContent = q; $("rm").textContent = m;
+    $("rw").textContent = (q * DINF).toFixed(5); $("rs").textContent = (q * Math.log(m)).toFixed(3);
+    const lc = logChoose(m, q); $("rl").textContent = Number.isNaN(lc) ? "k > M" : lc.toFixed(3);
+    drawEnt();
+  }
+  $("c").addEventListener("input", (e) => { cc = +e.target.value; updateEnt(); });
+  $("q").addEventListener("input", (e) => { q = +e.target.value; updateEnt(); });
+
+
+  function update() { updateSurf(); updateEnt(); }
+  $("theme").addEventListener("click", () => { const r = document.documentElement, dk = matchMedia("(prefers-color-scheme: dark)").matches;
+    r.dataset.theme = (r.dataset.theme || (dk ? "dark" : "light")) === "dark" ? "light" : "dark"; update(); });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", update);
+  window.addEventListener("resize", update);
+  update();
+})();
+</script>
+</body>
+</html>

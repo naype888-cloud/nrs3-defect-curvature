@@ -63,6 +63,12 @@ axis first: `cutDefect dy dz dx` cuts across `y`, `cutDefect dz dx dy` across `z
   area `12 π / Λ` is the area `a² dy dz` of the face.
 - `AreaLaw.cutEntropy_eq_cutPatterns` : `S = log #patterns`. "Open or closed" is not a
   definition: it is whether the bracket reads a coherence on the step.
+- `AreaLaw.openBackSteps_eq` : a step is open on the way back iff it is open on the way there;
+  the coherence `ψ̄_p ψ_q` has no direction.
+- `AreaLaw.backEntropy_eq_cutEntropy` : the entropy of the cut does not depend on the direction
+  in which the plane is crossed.
+- `AreaLaw.roundTripEntropy_eq`, `AreaLaw.roundTripEntropy_pos` : there and back gives
+  `2 dy dz log 2 > 0`. The way back adds; it does not undo.
 
 ## References
 
@@ -490,5 +496,98 @@ theorem horizonArea_cutCosmologicalConstant {c : ℕ} (hc : c + 1 < dx) (hy : 0 
   rw [cutCosmologicalConstant_eq hc, ha]
   field_simp
   ring
+
+/-! ## 10. The way back: the entropy of the cut has no direction -/
+
+/-- A step run backwards: `(p, q) ↦ (q, p)`. -/
+def reverseStep : Site3D dx dy dz × Site3D dx dy dz ↪ Site3D dx dy dz × Site3D dx dy dz :=
+  (Equiv.prodComm _ _).toEmbedding
+
+@[simp] lemma reverseStep_apply (s : Site3D dx dy dz × Site3D dx dy dz) :
+    reverseStep s = s.swap := rfl
+
+/-- The crossing steps run backwards, from `x = c + 1` to `x = c`. -/
+def backSteps (dx dy dz c : ℕ) : Finset (Site3D dx dy dz × Site3D dx dy dz) :=
+  (crossSteps dx dy dz c).map reverseStep
+
+lemma card_backSteps (c : ℕ) : (backSteps dx dy dz c).card = (crossSteps dx dy dz c).card :=
+  Finset.card_map _
+
+/-- The coherence of a step has no direction: `ψ̄_q ψ_p = conj (ψ̄_p ψ_q)`. -/
+lemma coherence_swap_ne_zero (ψ : H3D dx dy dz) (p q : Site3D dx dy dz) :
+    star (ψ q) * ψ p ≠ 0 ↔ star (ψ p) * ψ q ≠ 0 := by
+  rw [show star (ψ q) * ψ p = star (star (ψ p) * ψ q) by rw [star_mul, star_star], ne_eq,
+    star_eq_zero]
+
+open Classical in
+/-- The open steps of `ψ` on the way back. -/
+def openBackSteps (dx dy dz c : ℕ) (ψ : H3D dx dy dz) :
+    Finset (Site3D dx dy dz × Site3D dx dy dz) :=
+  (backSteps dx dy dz c).filter fun s => star (ψ s.1) * ψ s.2 ≠ 0
+
+/-- **A step is open on the way back iff it is open on the way there.** -/
+theorem openBackSteps_eq (c : ℕ) (ψ : H3D dx dy dz) :
+    openBackSteps dx dy dz c ψ = (openSteps dx dy dz c ψ).map reverseStep := by
+  ext s
+  simp only [openBackSteps, backSteps, openSteps, Finset.mem_filter, Finset.mem_map,
+    reverseStep_apply]
+  constructor
+  · rintro ⟨⟨t, ht, rfl⟩, h⟩
+    exact ⟨t, ⟨ht, (coherence_swap_ne_zero ψ t.1 t.2).mp h⟩, rfl⟩
+  · rintro ⟨t, ⟨ht, h⟩, rfl⟩
+    exact ⟨⟨t, ht, rfl⟩, (coherence_swap_ne_zero ψ t.1 t.2).mpr h⟩
+
+open Classical in
+/-- The patterns of open steps that unit states realize on the way back. -/
+def backPatterns (dx dy dz c : ℕ) : Finset (Finset (Site3D dx dy dz × Site3D dx dy dz)) :=
+  (backSteps dx dy dz c).powerset.filter fun S =>
+    ∃ ψ : H3D dx dy dz, ‖ψ‖ = 1 ∧ openBackSteps dx dy dz c ψ = S
+
+/-- **Every set of steps on the way back is the open set of some unit state.** -/
+theorem backPatterns_eq {c : ℕ} (hc : c + 1 < dx) (hy : 0 < dy) (hz : 0 < dz) :
+    backPatterns dx dy dz c = (backSteps dx dy dz c).powerset := by
+  classical
+  ext T
+  simp only [backPatterns, Finset.mem_filter, Finset.mem_powerset, and_iff_left_iff_imp]
+  intro hT
+  have hS : T.map reverseStep ⊆ crossSteps dx dy dz c := by
+    intro s hs
+    obtain ⟨t, ht, rfl⟩ := Finset.mem_map.mp hs
+    obtain ⟨u, hu, rfl⟩ := Finset.mem_map.mp (hT ht)
+    simpa using hu
+  have hmem : T.map reverseStep ∈ cutPatterns dx dy dz c := by
+    rw [cutPatterns_eq hc hy hz]
+    exact Finset.mem_powerset.mpr hS
+  obtain ⟨ψ, hψ, hψS⟩ := (Finset.mem_filter.mp hmem).2
+  refine ⟨ψ, hψ, ?_⟩
+  rw [openBackSteps_eq, hψS, Finset.map_map]
+  ext s
+  simp
+
+/-- The entropy of the cut on the way back: `log #patterns`. -/
+def backEntropy (dx dy dz c : ℕ) : ℝ := Real.log (backPatterns dx dy dz c).card
+
+/-- **The entropy of the cut does not depend on the direction.** -/
+theorem backEntropy_eq_cutEntropy {c : ℕ} (hc : c + 1 < dx) (hy : 0 < dy) (hz : 0 < dz) :
+    backEntropy dx dy dz c = cutEntropy dx dy dz c := by
+  rw [backEntropy, backPatterns_eq hc hy hz, Finset.card_powerset, card_backSteps, cutEntropy,
+    Finset.card_powerset]
+
+/-- The entropy of a round trip across the plane: there and back. -/
+def roundTripEntropy (dx dy dz c : ℕ) : ℝ := cutEntropy dx dy dz c + backEntropy dx dy dz c
+
+/-- **The way back adds, it does not undo: `S_there + S_back = 2 dy dz log 2`.** -/
+theorem roundTripEntropy_eq {c : ℕ} (hc : c + 1 < dx) (hy : 0 < dy) (hz : 0 < dz) :
+    roundTripEntropy dx dy dz c = 2 * ((dy * dz : ℕ) * Real.log 2) := by
+  rw [roundTripEntropy, backEntropy_eq_cutEntropy hc hy hz, cutEntropy_eq hc]
+  ring
+
+/-- **The way back returns nothing: a round trip has positive entropy.** -/
+theorem roundTripEntropy_pos {c : ℕ} (hc : c + 1 < dx) (hy : 0 < dy) (hz : 0 < dz) :
+    0 < roundTripEntropy dx dy dz c := by
+  rw [roundTripEntropy_eq hc hy hz]
+  have : (0 : ℝ) < (dy * dz : ℕ) := by exact_mod_cast Nat.mul_pos hy hz
+  have := Real.log_pos one_lt_two
+  positivity
 
 end AreaLaw

@@ -45,3 +45,8 @@ import NRS3DefectCurvature
 #print axioms FieldLevel.uncertainty_oneExcitation
 #print axioms FieldLevel.lie_secondQuant_cube
 #print axioms FieldLevel.exists_field_pattern
+#print axioms AreaLaw.openBackSteps_eq
+#print axioms AreaLaw.backPatterns_eq
+#print axioms AreaLaw.backEntropy_eq_cutEntropy
+#print axioms AreaLaw.roundTripEntropy_eq
+#print axioms AreaLaw.roundTripEntropy_pos

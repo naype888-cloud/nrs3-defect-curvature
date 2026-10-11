@@ -29,3 +29,12 @@ import NRS3DefectCurvature
 #print axioms AreaLaw.cutEntropy_eq_bracket
 #print axioms AreaLaw.faceArea_eq
 #print axioms AreaLaw.faceArea_zero
+#print axioms AreaLaw.bracketX_crossStep
+#print axioms AreaLaw.bracketX_stepTerm
+#print axioms AreaLaw.openSteps_patternVec
+#print axioms AreaLaw.cutPatterns_eq
+#print axioms AreaLaw.card_cutPatterns
+#print axioms AreaLaw.cutEntropy_eq_cutPatterns
+#print axioms AreaLaw.cutCosmologicalConstant_eq
+#print axioms AreaLaw.cutCosmologicalConstant_pos
+#print axioms AreaLaw.horizonArea_cutCosmologicalConstant

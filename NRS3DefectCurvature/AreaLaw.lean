@@ -51,6 +51,18 @@ axis first: `cutDefect dy dz dx` cuts across `y`, `cutDefect dz dx dy` across `z
 - `AreaLaw.cutEntropy_eq_bracket` : the entropy of the cut is read on the bracket.
 - `AreaLaw.faceArea_eq`, `AreaLaw.faceArea_zero` : the face is the pseudovector
   `(dy ŷ) × (dz ẑ) = dy · dz · x̂`, whose length is the number of steps the bracket sees.
+- `AreaLaw.bracketX_crossStep` : on a crossing step the bracket is `κ` forward and `−κ` back,
+  `κ = 2 / (ρ (dx − 1))`: two values, one per direction of crossing.
+- `AreaLaw.bracketX_stepTerm` : the bracket reads only the coherence `z = ψ̄_p ψ_q` of a step,
+  through `κ (z − z̄)`.
+- `AreaLaw.cutPatterns_eq` : every set of crossing steps is the set of open steps (`z ≠ 0`) of
+  some unit state, so `card_cutPatterns` : there are `2 ^ (dy · dz)` patterns.
+- `AreaLaw.cutCosmologicalConstant_eq` : the constant of a de Sitter horizon with the entropy of
+  the cut, `Λ = 3 π / (ℓ² S) = 3 π / (ℓ² dy dz log 2)`.
+- `AreaLaw.horizonArea_cutCosmologicalConstant` : with `a² = 4 ℓ² log 2` per step, the horizon
+  area `12 π / Λ` is the area `a² dy dz` of the face.
+- `AreaLaw.cutEntropy_eq_cutPatterns` : `S = log #patterns`. "Open or closed" is not a
+  definition: it is whether the bracket reads a coherence on the step.
 
 ## References
 
@@ -284,5 +296,199 @@ theorem faceArea_zero {c : ℕ} (hc : c + 1 < dx) :
     faceArea dy dz 0 = (bracketCrossSteps dx dy dz c).card := by
   rw [faceArea_eq, card_bracketCrossSteps hc]
   simp
+
+/-! ## 8. Open and closed: the bracket reads the coherence of a step -/
+
+/-- A crossing step goes from `(c, y, z)` to `(c + 1, y, z)`. -/
+lemma mem_crossSteps_iff (hd : 2 ≤ dx) {c : ℕ} {s : Site3D dx dy dz × Site3D dx dy dz} :
+    s ∈ crossSteps dx dy dz c ↔ s.1.1.val = c ∧ s.2.1.val = c + 1 ∧ s.1.2 = s.2.2 := by
+  simp only [crossSteps, Finset.mem_filter, Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨hp, hq, h⟩
+    exact (T3_ne_zero_iff hd hp hq).mp h
+  · rintro ⟨h1, h2, h3⟩
+    exact ⟨h1.le, by omega, (T3_ne_zero_iff hd h1.le (by omega)).mpr ⟨h1, h2, h3⟩⟩
+
+/-- A crossing step is fixed by where it lands. -/
+lemma crossSteps_eq_of_snd (hd : 2 ≤ dx) {c : ℕ} {s t : Site3D dx dy dz × Site3D dx dy dz}
+    (hs : s ∈ crossSteps dx dy dz c) (ht : t ∈ crossSteps dx dy dz c) (h : s.2 = t.2) :
+    s = t := by
+  rw [mem_crossSteps_iff hd] at hs ht
+  obtain ⟨⟨a, a'⟩, b⟩ := s
+  obtain ⟨⟨e, e'⟩, f⟩ := t
+  simp only at hs ht h
+  subst h
+  have : a = e := Fin.ext (by omega)
+  rw [this, hs.2.2, ht.2.2]
+
+/-- The constant of the bracket on one crossing step: `κ = 2 / (ρ (dx − 1))`. -/
+def stepBracket (dx : ℕ) : ℝ := 2 / (rho dx * ((dx : ℝ) - 1))
+
+/-- **On a crossing step the bracket is `κ` forward and `−κ` backward.** -/
+theorem bracketX_crossStep (hd : 2 ≤ dx) {c : ℕ} {s : Site3D dx dy dz × Site3D dx dy dz}
+    (hs : s ∈ crossSteps dx dy dz c) :
+    bracketX dx dy dz s.1 s.2 = (stepBracket dx : ℂ) ∧
+      bracketX dx dy dz s.2 s.1 = -(stepBracket dx : ℂ) := by
+  rw [mem_crossSteps_iff hd] at hs
+  obtain ⟨h1, h2, h3⟩ := hs
+  have hne : s.1.1 ≠ s.2.1 := fun h => by rw [h] at h1; omega
+  have hpos := posCoord_succ_sub dx hd s.1.1 s.2.1 (by omega)
+  have hr : (rho dx : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (rho_pos dx hd).ne'
+  have hd1 : (dx : ℝ) - 1 ≠ 0 := by
+    have : (1 : ℝ) < dx := by exact_mod_cast (show 1 < dx by omega)
+    linarith
+  have hT : T3 dx dy dz s.1 s.2 = 1 / (rho dx : ℂ) := by
+    rw [T3_apply_of_ne hne]
+    simp [Td, Ad, MinStep, h3, show s.1.1.val + 1 = s.2.1.val by omega]
+  have hT' : T3 dx dy dz s.2 s.1 = 1 / (rho dx : ℂ) := by
+    rw [T3_apply_of_ne hne.symm]
+    simp [Td, Ad, MinStep, h3, show s.1.1.val + 1 = s.2.1.val by omega]
+  have hx : (posCoord dx s.2.1 : ℂ) - posCoord dx s.1.1 = ((2 / ((dx : ℝ) - 1) : ℝ) : ℂ) := by
+    rw [← hpos]; push_cast; ring
+  refine ⟨?_, ?_⟩
+  · rw [bracketX_apply, hT, hx, stepBracket]
+    push_cast
+    field_simp
+  · rw [bracketX_apply, hT', ← neg_sub, hx, stepBracket]
+    push_cast
+    field_simp
+
+/-- The bracket has nothing on the diagonal. -/
+theorem bracketX_self (p : Site3D dx dy dz) : bracketX dx dy dz p p = 0 := by
+  rw [bracketX_apply, sub_self, mul_zero]
+
+/-- **The bracket reads only the coherence of a step.** The contribution of a crossing step
+to `⟨ψ, [T3, P_x] ψ⟩` is `κ (z − z̄)`, with `z = ψ̄_p ψ_q` the coherence between its two ends. -/
+theorem bracketX_stepTerm (hd : 2 ≤ dx) {c : ℕ} {s : Site3D dx dy dz × Site3D dx dy dz}
+    (hs : s ∈ crossSteps dx dy dz c) (ψ : H3D dx dy dz) :
+    star (ψ s.1) * bracketX dx dy dz s.1 s.2 * ψ s.2 +
+        star (ψ s.2) * bracketX dx dy dz s.2 s.1 * ψ s.1 =
+      (stepBracket dx : ℂ) * (star (ψ s.1) * ψ s.2 - star (star (ψ s.1) * ψ s.2)) := by
+  obtain ⟨h1, h2⟩ := bracketX_crossStep hd hs
+  rw [h1, h2, star_mul, star_star]
+  ring
+
+open Classical in
+/-- The open steps of `ψ`: the crossing steps whose two ends carry coherence, `ψ̄_p ψ_q ≠ 0`.
+On the others the bracket reads zero. -/
+def openSteps (dx dy dz c : ℕ) (ψ : H3D dx dy dz) : Finset (Site3D dx dy dz × Site3D dx dy dz) :=
+  (crossSteps dx dy dz c).filter fun s => star (ψ s.1) * ψ s.2 ≠ 0
+
+lemma openSteps_subset (c : ℕ) (ψ : H3D dx dy dz) :
+    openSteps dx dy dz c ψ ⊆ crossSteps dx dy dz c :=
+  Finset.filter_subset _ _
+
+/-- Rescaling a state does not open or close a step. -/
+lemma openSteps_smul (c : ℕ) {r : ℂ} (hr : r ≠ 0) (ψ : H3D dx dy dz) :
+    openSteps dx dy dz c (r • ψ) = openSteps dx dy dz c ψ := by
+  ext s
+  have : star r * r ≠ 0 := mul_ne_zero (star_ne_zero.mpr hr) hr
+  simp only [openSteps, Finset.mem_filter, PiLp.smul_apply, smul_eq_mul, star_mul]
+  constructor
+  · rintro ⟨h, h'⟩
+    exact ⟨h, fun h0 => h' (by rw [show star (ψ s.1) * star r * (r * ψ s.2) =
+      (star r * r) * (star (ψ s.1) * ψ s.2) by ring, h0, mul_zero])⟩
+  · rintro ⟨h, h'⟩
+    exact ⟨h, by rw [show star (ψ s.1) * star r * (r * ψ s.2) =
+      (star r * r) * (star (ψ s.1) * ψ s.2) by ring]; exact mul_ne_zero this h'⟩
+
+open Classical in
+/-- The vector that opens exactly the steps of `S`: `1` on their ends and on `p₀`. -/
+def patternVec (p₀ : Site3D dx dy dz) (S : Finset (Site3D dx dy dz × Site3D dx dy dz)) :
+    H3D dx dy dz :=
+  WithLp.toLp 2 fun p => if p = p₀ ∨ ∃ s ∈ S, s.1 = p ∨ s.2 = p then 1 else 0
+
+/-- **`patternVec p₀ S` opens exactly the steps of `S`.** -/
+theorem openSteps_patternVec (hd : 2 ≤ dx) {c : ℕ} {p₀ : Site3D dx dy dz} (hp₀ : p₀.1.val = c)
+    {S : Finset (Site3D dx dy dz × Site3D dx dy dz)} (hS : S ⊆ crossSteps dx dy dz c) :
+    openSteps dx dy dz c (patternVec p₀ S) = S := by
+  ext s
+  rw [openSteps, Finset.mem_filter]
+  simp only [patternVec]
+  constructor
+  · rintro ⟨hs, h⟩
+    have hs' := (mem_crossSteps_iff hd).mp hs
+    by_contra hns
+    apply h
+    have h2 : ¬ (s.2 = p₀ ∨ ∃ t ∈ S, t.1 = s.2 ∨ t.2 = s.2) := by
+      rintro (h0 | ⟨t, ht, h0 | h0⟩)
+      · rw [← h0] at hp₀; omega
+      · have := ((mem_crossSteps_iff hd).mp (hS ht)).1
+        rw [h0] at this; omega
+      · exact hns (crossSteps_eq_of_snd hd hs (hS ht) h0.symm ▸ ht)
+    simp only [h2, ↓reduceIte, mul_zero]
+  · intro hs
+    refine ⟨hS hs, ?_⟩
+    have e1 : s.1 = p₀ ∨ ∃ t ∈ S, t.1 = s.1 ∨ t.2 = s.1 := Or.inr ⟨s, hs, Or.inl rfl⟩
+    have e2 : s.2 = p₀ ∨ ∃ t ∈ S, t.1 = s.2 ∨ t.2 = s.2 := Or.inr ⟨s, hs, Or.inr rfl⟩
+    simp only [e1, e2, ↓reduceIte]
+    simp
+
+open Classical in
+/-- The patterns of open steps that unit states realize across the plane. -/
+def cutPatterns (dx dy dz c : ℕ) : Finset (Finset (Site3D dx dy dz × Site3D dx dy dz)) :=
+  (crossSteps dx dy dz c).powerset.filter fun S =>
+    ∃ ψ : H3D dx dy dz, ‖ψ‖ = 1 ∧ openSteps dx dy dz c ψ = S
+
+/-- **Every set of crossing steps is the open set of some unit state.** -/
+theorem cutPatterns_eq {c : ℕ} (hc : c + 1 < dx) (hy : 0 < dy) (hz : 0 < dz) :
+    cutPatterns dx dy dz c = (crossSteps dx dy dz c).powerset := by
+  classical
+  ext S
+  simp only [cutPatterns, Finset.mem_filter, Finset.mem_powerset, and_iff_left_iff_imp]
+  intro hS
+  let p₀ : Site3D dx dy dz := (⟨c, by omega⟩, ⟨0, hy⟩, ⟨0, hz⟩)
+  let φ := patternVec p₀ S
+  have hφ : φ ≠ 0 := fun h => by
+    have := congrArg (fun v : H3D dx dy dz => v p₀) h
+    simp [φ, patternVec] at this
+  have hn : (‖φ‖ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr hφ)
+  refine ⟨(‖φ‖ : ℂ)⁻¹ • φ, ?_, ?_⟩
+  · rw [norm_smul, norm_inv, Complex.norm_real, norm_norm,
+      inv_mul_cancel₀ (norm_ne_zero_iff.mpr hφ)]
+  · rw [openSteps_smul c (inv_ne_zero hn)]
+    exact openSteps_patternVec (by omega) rfl hS
+
+/-- **There are `2 ^ (dy · dz)` patterns: two per step, open or closed.** -/
+theorem card_cutPatterns {c : ℕ} (hc : c + 1 < dx) (hy : 0 < dy) (hz : 0 < dz) :
+    (cutPatterns dx dy dz c).card = 2 ^ (dy * dz) := by
+  rw [cutPatterns_eq hc hy hz, Finset.card_powerset, card_crossSteps hc]
+
+/-- **The entropy of the cut counts the patterns the bracket reads.** No definition of
+"open or closed" enters: `S = log #patterns = dy · dz · log 2`. -/
+theorem cutEntropy_eq_cutPatterns {c : ℕ} (hc : c + 1 < dx) (hy : 0 < dy) (hz : 0 < dz) :
+    cutEntropy dx dy dz c = Real.log (cutPatterns dx dy dz c).card := by
+  rw [cutEntropy, cutPatterns_eq hc hy hz]
+
+/-! ## 9. The cosmological constant of the cut -/
+
+/-- The constant of a de Sitter horizon of entropy `S = A / (4 ℓ²)` with `A = 12 π / Λ`, taking
+for `S` the entropy of the cut: `Λ = 3 π / (ℓ² S)`. -/
+def cutCosmologicalConstant (dx dy dz c : ℕ) (ℓ : ℝ) : ℝ :=
+  3 * Real.pi / (ℓ ^ 2 * cutEntropy dx dy dz c)
+
+/-- **`Λ = 3 π / (ℓ² dy dz log 2)`.** -/
+theorem cutCosmologicalConstant_eq {c : ℕ} (hc : c + 1 < dx) (ℓ : ℝ) :
+    cutCosmologicalConstant dx dy dz c ℓ =
+      3 * Real.pi / (ℓ ^ 2 * ((dy * dz : ℕ) * Real.log 2)) := by
+  rw [cutCosmologicalConstant, cutEntropy_eq hc]
+
+theorem cutCosmologicalConstant_pos {c : ℕ} (hc : c + 1 < dx) (hy : 0 < dy) (hz : 0 < dz)
+    {ℓ : ℝ} (hℓ : ℓ ≠ 0) : 0 < cutCosmologicalConstant dx dy dz c ℓ := by
+  rw [cutCosmologicalConstant_eq hc]
+  have : (0 : ℝ) < (dy * dz : ℕ) := by exact_mod_cast Nat.mul_pos hy hz
+  have := Real.log_pos one_lt_two
+  positivity
+
+/-- **The horizon has the area of the face.** With `a² = 4 ℓ² log 2` per step, the area
+`12 π / Λ` of the de Sitter horizon is `a² dy dz`. -/
+theorem horizonArea_cutCosmologicalConstant {c : ℕ} (hc : c + 1 < dx) (hy : 0 < dy)
+    (hz : 0 < dz) {a ℓ : ℝ} (hℓ : ℓ ≠ 0) (ha : a ^ 2 = 4 * ℓ ^ 2 * Real.log 2) :
+    12 * Real.pi / cutCosmologicalConstant dx dy dz c ℓ = a ^ 2 * (dy * dz : ℕ) := by
+  have h1 : (0 : ℝ) < (dy * dz : ℕ) := by exact_mod_cast Nat.mul_pos hy hz
+  have h2 := Real.log_pos one_lt_two
+  rw [cutCosmologicalConstant_eq hc, ha]
+  field_simp
+  ring
 
 end AreaLaw

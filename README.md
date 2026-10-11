@@ -57,6 +57,21 @@ The proofs are the modules `D16`–`D16i` of the
 `NRS3DefectCurvature/Chain.lean` and `NRS3DefectCurvature/Entropy.lean` state them in one place;
 `NRS3DefectCurvature/EntropyCurvature.lean` joins the two.
 
+### The cube at the level of the quantized field
+
+Each position `p` of the cube is a mode of a ladder system (`LadderSystem`, Physlib). Second
+quantization `dΓ M = Σ M_pq a†_p a_q` respects brackets, and its sector of one excitation is the
+cube. `NRS3DefectCurvature/FieldLevel.lean`:
+
+| Statement | Lean |
+|---|---|
+| `dΓ ⁅M, N⁆ = ⁅dΓ M, dΓ N⁆`, in every excitation sector | `secondQuant_lie` |
+| `dΓ M (Σ ψ_p a†_p Ω) = Σ (M ψ)_p a†_p Ω` | `secondQuant_oneExcitation` |
+| with `a†` adjoint of `a` for `β` and `β(Ω, Ω) = 1`, `β` restricts to `ψ̄ · φ` | `form_oneExcitation` |
+| the uncertainty field `Var · Var − \|⟨[A, B]⟩\|²/4` of the field is the one of the cube | `uncertainty_oneExcitation` |
+| `⁅dΓ T3, dΓ P_x⁆ = dΓ [T3, P_x]` | `lie_secondQuant_cube` |
+| every pattern of open crossing steps is a unit field state, read by the bracket of the field | `exists_field_pattern` |
+
 ## What is declared
 
 - **Gauss–Bonnet**, `∫K dA = 2πχ` (`HGaussBonnet`): Mathlib has no Gauss–Bonnet. It is shown
@@ -64,6 +79,9 @@ The proofs are the modules `D16`–`D16i` of the
 - **Bekenstein–Hawking**, `S = A/(4ℓ_P²)` (`HBekensteinHawking`): the `1/4` and the scale are
   not derived; the bridge is shown satisfiable. The coefficient `log M` depends on the cut.
   The horizon here is the finite-time light cone, not a black hole.
+- **The star structure of the field** (`IsStar`): `a†` is the adjoint of `a` for a sesquilinear
+  form `β`, with a vacuum `β(Ω, Ω) = 1`. Physlib still lists this adjointness as a TODO for the
+  harmonic oscillator.
 - The classical cell structure of `Σ_g`, whose `1`-skeleton has `2g` independent cycles. The
   graph of transport realizes those `2g` cycles (`cycleRank_handleGraph`); that it is the
   `1`-skeleton of a surface is not formalized.

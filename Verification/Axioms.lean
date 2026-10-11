@@ -38,3 +38,10 @@ import NRS3DefectCurvature
 #print axioms AreaLaw.cutCosmologicalConstant_eq
 #print axioms AreaLaw.cutCosmologicalConstant_pos
 #print axioms AreaLaw.horizonArea_cutCosmologicalConstant
+#print axioms FieldLevel.secondQuant_lie
+#print axioms FieldLevel.secondQuant_oneExcitation
+#print axioms FieldLevel.form_oneExcitation
+#print axioms FieldLevel.form_lie_secondQuant
+#print axioms FieldLevel.uncertainty_oneExcitation
+#print axioms FieldLevel.lie_secondQuant_cube
+#print axioms FieldLevel.exists_field_pattern

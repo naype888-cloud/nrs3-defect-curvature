@@ -8,6 +8,7 @@ module
 public import NavaRobertsonIndependent.Mathematics.D37f_LightCone
 public import NavaRobertsonIndependent.Mathematics.D25_DimensionalQuantum
 public import NavaRobertsonIndependent.Mathematics.D37e_VolumetricQuantum
+public import Mathlib.LinearAlgebra.CrossProduct
 
 /-!
 # The area law of the cube
@@ -44,6 +45,12 @@ axis first: `cutDefect dy dz dx` cuts across `y`, `cutDefect dz dx dy` across `z
 - `AreaLaw.prod_cutDefect` : the three faces carry `Ω_x Ω_y Ω_z = V² · 𝒱`.
 - `AreaLaw.volQuantum_eq_boundary` : the dark quantum of the interior is read on the faces,
   `𝒱 = (log 2)³ Ω_x Ω_y Ω_z / (S_x S_y S_z)`.
+- `AreaLaw.bracketX_apply` : the bracket `[T3, P_x]` is `T3 p q (x_q − x_p)`.
+- `AreaLaw.bracketCrossSteps_eq` : across the plane the bracket is nonzero exactly on the
+  crossing steps, so `card_bracketCrossSteps` : the bracket sees `dy · dz` steps.
+- `AreaLaw.cutEntropy_eq_bracket` : the entropy of the cut is read on the bracket.
+- `AreaLaw.faceArea_eq`, `AreaLaw.faceArea_zero` : the face is the pseudovector
+  `(dy ŷ) × (dz ẑ) = dy · dz · x̂`, whose length is the number of steps the bracket sees.
 
 ## References
 
@@ -191,5 +198,91 @@ theorem volQuantum_eq_boundary {cx cy cz : ℕ} (hx : cx + 1 < dx) (hy : cy + 1 
   field_simp
   rw [eq_div_iff hV]
   ring
+
+/-! ## 6. The bracket sees the crossing steps -/
+
+/-- The `x` position of the cube: `P_d` on the `x` axis, identity on `y, z`. -/
+def posX (dx dy dz : ℕ) : Matrix (Site3D dx dy dz) (Site3D dx dy dz) ℂ :=
+  liftAlong (eX dx dy dz) (Pd dx)
+
+/-- The bracket of the cube transport with the `x` position: `[T3, P_x]`. -/
+def bracketX (dx dy dz : ℕ) : Matrix (Site3D dx dy dz) (Site3D dx dy dz) ℂ :=
+  T3 dx dy dz * posX dx dy dz - posX dx dy dz * T3 dx dy dz
+
+lemma posX_apply (p q : Site3D dx dy dz) :
+    posX dx dy dz p q = if p = q then (posCoord dx p.1 : ℂ) else 0 := by
+  obtain ⟨i, j, k⟩ := p
+  obtain ⟨i', j', k'⟩ := q
+  by_cases h : i = i' <;> by_cases h' : (j, k) = (j', k') <;>
+    simp_all [posX, liftAlong, eX, Pd]
+
+/-- **The bracket on a step is the step times the distance it moves in `x`.** -/
+theorem bracketX_apply (p q : Site3D dx dy dz) :
+    bracketX dx dy dz p q = T3 dx dy dz p q * ((posCoord dx q.1 : ℂ) - posCoord dx p.1) := by
+  simp only [bracketX, Matrix.sub_apply, Matrix.mul_apply, posX_apply, mul_ite, mul_zero,
+    ite_mul, zero_mul, Finset.sum_ite_eq', Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  ring
+
+/-- Distinct positions have distinct coordinates. -/
+lemma posCoord_ne (hd : 2 ≤ dx) {i j : Fin dx} (h : i ≠ j) : posCoord dx i ≠ posCoord dx j := by
+  intro h'
+  have hd1 : (dx : ℝ) - 1 ≠ 0 := by
+    have : (1 : ℝ) < dx := by exact_mod_cast (show 1 < dx by omega)
+    linarith
+  unfold posCoord at h'
+  rw [div_left_inj' hd1] at h'
+  exact h (Fin.ext (by exact_mod_cast (by linarith : (i.val : ℝ) = j.val)))
+
+/-- **Across the plane the bracket is nonzero exactly where the transport is.** -/
+theorem bracketX_ne_zero_iff (hd : 2 ≤ dx) {c : ℕ} {p q : Site3D dx dy dz} (hp : p.1.val ≤ c)
+    (hq : c < q.1.val) : bracketX dx dy dz p q ≠ 0 ↔ T3 dx dy dz p q ≠ 0 := by
+  have hne : q.1 ≠ p.1 := fun h => by rw [h] at hq; omega
+  have hs : (posCoord dx q.1 : ℂ) - posCoord dx p.1 ≠ 0 :=
+    sub_ne_zero.mpr (by exact_mod_cast posCoord_ne hd hne)
+  rw [bracketX_apply, ne_eq, mul_eq_zero, not_or]
+  exact ⟨fun h => h.1, fun h => ⟨h, hs⟩⟩
+
+open Classical in
+/-- The steps across the plane on which the bracket `[T3, P_x]` does not vanish. -/
+def bracketCrossSteps (dx dy dz c : ℕ) : Finset (Site3D dx dy dz × Site3D dx dy dz) :=
+  Finset.univ.filter fun pq => pq.1.1.val ≤ c ∧ c < pq.2.1.val ∧ bracketX dx dy dz pq.1 pq.2 ≠ 0
+
+/-- **The bracket sees exactly the crossing steps.** -/
+theorem bracketCrossSteps_eq (hd : 2 ≤ dx) (c : ℕ) :
+    bracketCrossSteps dx dy dz c = crossSteps dx dy dz c := by
+  ext ⟨p, q⟩
+  simp only [bracketCrossSteps, crossSteps, Finset.mem_filter, Finset.mem_univ, true_and]
+  constructor
+  · rintro ⟨hp, hq, h⟩
+    exact ⟨hp, hq, (bracketX_ne_zero_iff hd hp hq).mp h⟩
+  · rintro ⟨hp, hq, h⟩
+    exact ⟨hp, hq, (bracketX_ne_zero_iff hd hp hq).mpr h⟩
+
+/-- **The bracket sees `dy · dz` steps across the plane, the area of the face.** -/
+theorem card_bracketCrossSteps {c : ℕ} (hc : c + 1 < dx) :
+    (bracketCrossSteps dx dy dz c).card = dy * dz := by
+  rw [bracketCrossSteps_eq (by omega), card_crossSteps hc]
+
+/-- **The entropy of the cut is read on the bracket.** -/
+theorem cutEntropy_eq_bracket {c : ℕ} (hc : c + 1 < dx) :
+    cutEntropy dx dy dz c = Real.log (bracketCrossSteps dx dy dz c).powerset.card := by
+  rw [cutEntropy, bracketCrossSteps_eq (by omega)]
+
+/-! ## 7. The face is a pseudovector -/
+
+/-- The face across `x`: the pseudovector `(dy ŷ) × (dz ẑ)`. -/
+def faceArea (dy dz : ℕ) : Fin 3 → ℝ :=
+  crossProduct ((dy : ℝ) • ![(0 : ℝ), 1, 0]) ((dz : ℝ) • ![(0 : ℝ), 0, 1])
+
+/-- **The face across `x` is `dy · dz · x̂`.** -/
+theorem faceArea_eq (dy dz : ℕ) : faceArea dy dz = ![(dy * dz : ℝ), 0, 0] := by
+  ext i
+  fin_cases i <;> simp [faceArea, cross_apply]
+
+/-- **The length of the face is the number of steps the bracket sees.** -/
+theorem faceArea_zero {c : ℕ} (hc : c + 1 < dx) :
+    faceArea dy dz 0 = (bracketCrossSteps dx dy dz c).card := by
+  rw [faceArea_eq, card_bracketCrossSteps hc]
+  simp
 
 end AreaLaw

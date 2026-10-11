@@ -22,3 +22,10 @@ import NRS3DefectCurvature
 #print axioms AreaLaw.bekensteinHawking_iff
 #print axioms AreaLaw.prod_cutDefect
 #print axioms AreaLaw.volQuantum_eq_boundary
+#print axioms AreaLaw.bracketX_apply
+#print axioms AreaLaw.bracketX_ne_zero_iff
+#print axioms AreaLaw.bracketCrossSteps_eq
+#print axioms AreaLaw.card_bracketCrossSteps
+#print axioms AreaLaw.cutEntropy_eq_bracket
+#print axioms AreaLaw.faceArea_eq
+#print axioms AreaLaw.faceArea_zero

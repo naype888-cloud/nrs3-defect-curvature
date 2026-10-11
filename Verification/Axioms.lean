@@ -13,3 +13,12 @@ import NRS3DefectCurvature
 #print axioms EntropyCurvature.handleLinks_mem
 #print axioms EntropyCurvature.entropy_eq_curvature
 #print axioms EntropyCurvature.entropy_handle_step
+#print axioms AreaLaw.T3_ne_zero_iff
+#print axioms AreaLaw.card_crossSteps
+#print axioms AreaLaw.cutEntropy_eq
+#print axioms AreaLaw.cutEntropy_eq_of_depth
+#print axioms AreaLaw.cutDefect_pos
+#print axioms AreaLaw.cutEntropy_eq_mul_cutDefect
+#print axioms AreaLaw.bekensteinHawking_iff
+#print axioms AreaLaw.prod_cutDefect
+#print axioms AreaLaw.volQuantum_eq_boundary

@@ -12,7 +12,7 @@ public import NavaRobertsonIndependent.Mathematics.D16f_HandleGraph
 
 The chain `D16`–`D16f` of the base repository, stated in one place. Transport `T_d` moves on the
 path, a tree. A link between two sites creates a cycle exactly when it is not local; each cycle
-carries one quantum `δ_∞ = C_∞ − 1` of defect; `2g` links carry the defect `2g δ_∞` of a closed
+carries one quantum `δ_∞ = C_N^∞ − 1` of defect; `2g` links carry the defect `2g δ_∞` of a closed
 surface of genus `g`, and under Gauss–Bonnet that defect fixes its total curvature.
 
 * `defect_fixes_curvature` : for the path with `2g` links, cycle rank `2g`, defect `Ω(Σ_g)` and

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Rovelli and NRS³</title>
-<meta name="description" content="Carlo Rovelli's Reality Is Not What It Seems, chapter by chapter, against the Lean modules of NRS and NRS³: where they coincide, where they are analogous, where they depart.">
+<title>Rovelli and RS^N³</title>
+<meta name="description" content="Carlo Rovelli's Reality Is Not What It Seems, chapter by chapter, against the Lean modules of RS^N and RS^N³: where they coincide, where they are analogous, where they depart.">
 <style>
   :root { --bg: #fcfcfb; --panel: #fff; --ink: #0b0b0b; --ink2: #52514e; --muted: #8a8985;
     --grid: #e4e3df; --blue: #2a78d6; --orange: #eb6834; --green: #2f8f5b; --violet: #7a5bd6; }
@@ -52,7 +52,7 @@
 <main>
   <button class="theme" id="theme" type="button" aria-label="Toggle dark mode">Theme</button>
   <nav class="tabs" aria-label="Pages"><a href="./">Defect and curvature</a><a href="entropy.html">Entropy</a><a href="rovelli.html" aria-current="page">Rovelli, chapter by chapter</a></nav>
-  <h1>Rovelli and NRS³, chapter by chapter</h1>
+  <h1>Rovelli and RS^N³, chapter by chapter</h1>
   <p class="lead">Carlo Rovelli's <i>Reality Is Not What It Seems</i> (Spanish edition: <i>La realidad
     no es lo que parece</i>, Tusquets, ISBN 978-84-9066-194-9) describes loop quantum gravity. Each
     chapter is set against the Lean modules of
@@ -69,7 +69,7 @@
     <button type="button" data-f="none" aria-pressed="false">No counterpart</button>
   </div>
 
-  <div class="head" aria-hidden="true"><span>#</span><span>Chapter</span><span>Rovelli</span><span>NRS / NRS³ in Lean</span><span>Relation</span></div>
+  <div class="head" aria-hidden="true"><span>#</span><span>Chapter</span><span>Rovelli</span><span>RS^N / RS^N³ in Lean</span><span>Relation</span></div>
   <div id="rows"></div>
 
   <p class="note">Relations: <b>coincides</b> — the same statement reached by another route;
@@ -87,7 +87,7 @@
   const rows = [
     ["P", "Prologue", "Walking along the beach",
      "Reality is a network of granular events; space and time dissolve in quantum gravity.",
-     `NRS / NRS³: the path ${M("D3_PathGraph")} is the space itself; there is no continuum underneath.`, "coincides"],
+     `RS^N / RS^N³: the path ${M("D3_PathGraph")} is the space itself; there is no continuum underneath.`, "coincides"],
     ["1", "Grains", "Roots",
      "Democritus against Zeno: divisibility has a limit; infinitely many points make nothing extended.",
      `A finite path (${M("D3_PathGraph")}); the least resolvable is fixed by uncertainty (${M("D21_ElementalNRSInequality")}, ${M("D23_EigenvectorSaturation")}).`, "coincides"],
@@ -120,7 +120,7 @@
      `One link, one quantum: each non-local link closes a cycle with δ∞ (${M("D16f_HandleGraph")}); a cut is a horizon that hides its configurations (${M("D16i_CutHorizon")}); ħ/ΔE is a bound (${R("nrs3-penrose")}). The horizon is the finite-time cone, not a black hole; Hawking's temperature is not derived.`, "analogous"],
     ["11", "The end of infinity", "Beyond space and time",
      "c, ħ and the Planck length bound speed, information and length; infinity is the name of what we do not know.",
-     `∞ exists as a limit in ℝ never reached: C∞ = √(π²/3 − 2) (${M("D8_Szego")}, ${M("D9_Monotonicity")}); the gap to it depends on π only (${M("D24_GapFourAsymptote")}).`, "departs"],
+     `∞ exists as a limit in ℝ never reached: C_N^∞ = √(π²/3 − 2) (${M("D8_Szego")}, ${M("D9_Monotonicity")}); the gap to it depends on π only (${M("D24_GapFourAsymptote")}).`, "departs"],
     ["12", "Information", "Beyond space and time",
      "Shannon and Boltzmann; finite information; Bekenstein: entropy counts the ways quanta of area fill a surface; holography; thermal time.",
      `Entropy of a cut ∝ its defect, S = (log M/δ∞)·Ω (${M("D16g_CutEntropy")}); configurations are graphs with k new cycles (${M("D16h_CutCycles")}); hidden behind the horizon (${M("D16i_CutHorizon")}). S = A/(4ℓ_P²) is the declared bridge <code>HBekensteinHawking</code>; it forces a₀ = 4ℓ_P² log M/δ∞.`, "declared"],
@@ -134,7 +134,7 @@
       <span class="n">${n}</span>
       <span class="t">${t}<small>${part}</small></span>
       <div><span class="lbl">Rovelli</span><p>${rov}</p></div>
-      <div><span class="lbl">NRS / NRS³ in Lean</span><p>${can}</p></div>
+      <div><span class="lbl">RS^N / RS^N³ in Lean</span><p>${can}</p></div>
       <div><span class="lbl">Relation</span><span class="badge ${rel}">${label[rel]}</span></div>
     </article>`).join("");
   document.querySelectorAll(".filters button").forEach((b) => b.addEventListener("click", () => {

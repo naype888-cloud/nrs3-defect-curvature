@@ -20,6 +20,9 @@ import NRS3DefectCurvature
 #print axioms AreaLaw.cutDefect_pos
 #print axioms AreaLaw.cutEntropy_eq_mul_cutDefect
 #print axioms AreaLaw.bekensteinHawking_iff
+#print axioms AreaLaw.planck_le_of_bekensteinHawking
+#print axioms AreaLaw.step_eq_two_sqrt_log_two_mul
+#print axioms AreaLaw.planck_le_of_cutEntropy
 #print axioms AreaLaw.prod_cutDefect
 #print axioms AreaLaw.volQuantum_eq_boundary
 #print axioms AreaLaw.bracketX_apply

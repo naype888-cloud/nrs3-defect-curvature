@@ -9,6 +9,7 @@ public import NavaRobertsonIndependent.Mathematics.D37f_LightCone
 public import NavaRobertsonIndependent.Mathematics.D25_DimensionalQuantum
 public import NavaRobertsonIndependent.Mathematics.D37e_VolumetricQuantum
 public import Mathlib.LinearAlgebra.CrossProduct
+public import Mathlib.Analysis.Complex.ExponentialBounds
 
 /-!
 # The area law of the cube
@@ -189,6 +190,33 @@ theorem bekensteinHawking_iff {a ℓ : ℝ} (hℓ : ℓ ≠ 0) (hy : 0 < dy) (hz
   · intro h
     rw [h]
     ring
+
+/-- **The area law gives the resolution floor.** If the step area `a²` satisfies
+`a² = 4 ℓ² log 2` (the Bekenstein–Hawking condition of `bekensteinHawking_iff`) with `ℓ` the
+Planck length, then `ℓ ≤ a`: the cell is not smaller than the Planck length, which is the field
+`resolution : lP ≤ a` of `PhysicalStep`. The step is `a = 2 √(log 2) ℓ`, a pure number times `ℓ`. -/
+theorem planck_le_of_bekensteinHawking {a ℓ : ℝ} (ha : 0 < a)
+    (h : a ^ 2 = 4 * ℓ ^ 2 * Real.log 2) : ℓ ≤ a := by
+  have hlog : (1 : ℝ) / 4 ≤ Real.log 2 := by
+    have := Real.log_two_gt_d9
+    linarith
+  have h2 : ℓ ^ 2 ≤ a ^ 2 := by nlinarith [sq_nonneg ℓ]
+  exact (le_abs_self ℓ).trans (abs_le_of_sq_le_sq h2 ha.le)
+
+theorem step_eq_two_sqrt_log_two_mul {a ℓ : ℝ} (hℓ : 0 < ℓ) (ha : 0 < a)
+    (h : a ^ 2 = 4 * ℓ ^ 2 * Real.log 2) : a = 2 * Real.sqrt (Real.log 2) * ℓ := by
+  have hl : 0 ≤ Real.log 2 := (Real.log_pos one_lt_two).le
+  have hs : (2 * Real.sqrt (Real.log 2) * ℓ) ^ 2 = 4 * ℓ ^ 2 * Real.log 2 := by
+    rw [mul_pow, mul_pow, Real.sq_sqrt hl]; ring
+  have hpos : 0 ≤ 2 * Real.sqrt (Real.log 2) * ℓ := by positivity
+  exact (sq_eq_sq₀ ha.le hpos).mp (h.trans hs.symm)
+
+/-- **From the entropy of the cut to the floor:** if the cut satisfies the Bekenstein–Hawking law
+with Planck length `ℓ > 0` and step area `a² > 0`, the cell is at least `ℓ`. -/
+theorem planck_le_of_cutEntropy {a ℓ : ℝ} (hℓ : 0 < ℓ) (ha : 0 < a) (hy : 0 < dy)
+    (hz : 0 < dz) {c : ℕ} (hc : c + 1 < dx)
+    (h : cutEntropy dx dy dz c = a ^ 2 * (dy * dz : ℕ) / (4 * ℓ ^ 2)) : ℓ ≤ a :=
+  planck_le_of_bekensteinHawking ha ((bekensteinHawking_iff hℓ.ne' hy hz hc).mp h)
 
 /-! ## 5. The interior is read on the faces -/
 
